@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const task = await prisma.task.update({
-    where: { id: params.id },
+    where: { id },
     data: { status: 'TODO', completedAt: null },
     include: {
       client: { select: { id: true, name: true } },

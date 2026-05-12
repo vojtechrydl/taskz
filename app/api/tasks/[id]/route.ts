@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const body = await req.json()
 
   const data: Record<string, unknown> = {}
@@ -19,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (body.dueDate !== undefined) data.dueDate = body.dueDate ? new Date(body.dueDate) : null
 
   const task = await prisma.task.update({
-    where: { id: params.id },
+    where: { id },
     data,
     include: {
       client: { select: { id: true, name: true } },
@@ -30,7 +31,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return NextResponse.json(task)
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  await prisma.task.delete({ where: { id: params.id } })
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  await prisma.task.delete({ where: { id } })
   return new NextResponse(null, { status: 204 })
 }
