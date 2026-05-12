@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "npx prisma db push && node server.js"
+startCommand = "npx prisma db push && node .next/standalone/server.js"
