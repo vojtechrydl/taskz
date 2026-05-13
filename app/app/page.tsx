@@ -291,7 +291,7 @@ export default function AppPage() {
                                   const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
                                   return (
                                     <div key={t.id}
-                                      className={`card p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''}`}
+                                      className={`card p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''}`}
                                       draggable
                                       onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
                                       onDragEnd={() => setDragOverCol(null)}

@@ -144,7 +144,7 @@ function TasksPageInner() {
     const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
     return (
       <div
-        className={`card p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''} hover:border-[#3A3D40] transition-colors`}
+        className={`card p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} hover:border-[#3A3D40] transition-colors`}
         draggable={!mobile}
         onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
         onDragEnd={() => setDragOverCol(null)}
