@@ -92,12 +92,12 @@ export default function AppPage() {
   }
 
   const setStatus = async (taskId: string, status: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as Task['status'] } : t))
     await fetch(`/api/tasks/${taskId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
-    loadData()
   }
 
   const openLog = (t: Task) => {
