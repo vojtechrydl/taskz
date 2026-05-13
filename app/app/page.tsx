@@ -187,7 +187,7 @@ export default function AppPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#161819] border-b border-[#2A2D30] sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 flex items-center gap-4 h-14">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 h-14">
           <div className="flex items-center gap-2.5">
             <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
             <span className="font-semibold text-white text-sm">TASKZ</span>
@@ -209,7 +209,7 @@ export default function AppPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         {!selectedId ? (
           <div className="card p-12 text-center text-[#8B9099] text-sm mt-8">Vyberte své jméno v záhlaví.</div>
         ) : loading ? (
