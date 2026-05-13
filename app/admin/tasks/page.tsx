@@ -99,7 +99,12 @@ function TasksPageInner() {
     if (!form.title.trim() || !form.clientId) return
     const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
     const method = editing ? 'PATCH' : 'POST'
-    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    const payload = {
+      ...form,
+      dueDate: form.dueDate || null,
+      estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null,
+    }
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     cancel(); load()
   }
 

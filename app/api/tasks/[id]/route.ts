@@ -16,15 +16,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.clientId !== undefined) data.clientId = body.clientId
   if (body.employeeId !== undefined) data.employeeId = body.employeeId || null
   if (body.estimatedHours !== undefined)
-    data.estimatedHours = body.estimatedHours ? parseFloat(body.estimatedHours) : null
-  if (body.dueDate !== undefined) {
-    if (body.dueDate) {
-      const [y, m, d] = body.dueDate.split('-').map(Number)
-      data.dueDate = new Date(y, m - 1, d, 12, 0, 0)
-    } else {
-      data.dueDate = null
-    }
-  }
+    data.estimatedHours = body.estimatedHours !== '' && body.estimatedHours != null ? parseFloat(body.estimatedHours) : null
+  if (body.dueDate !== undefined)
+    data.dueDate = body.dueDate ? new Date(body.dueDate + 'T12:00:00') : null
 
   const task = await prisma.task.update({
     where: { id },
