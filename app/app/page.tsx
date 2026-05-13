@@ -26,6 +26,18 @@ type TimeEntry = {
   employee: { id: string; name: string }
 }
 
+const fmtHours = (n: number) => n % 1 === 0 ? n.toString() : n.toFixed(1)
+
+const dueDateClass = (dueDate: string, status: string) => {
+  if (status === 'DONE') return 'text-[#8B9099]'
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
+  const due = new Date(dueDate); due.setHours(0, 0, 0, 0)
+  if (due <= today) return 'text-red-400'
+  if (due.getTime() === tomorrow.getTime()) return 'text-amber-400'
+  return 'text-emerald-400'
+}
+
 const STATUS_CLASS: Record<string, string> = {
   TODO:        'bg-[#2A2D30] text-[#8B9099]',
   ASSIGNED:    'bg-sky-500/15 text-sky-400',
@@ -331,14 +343,16 @@ export default function AppPage() {
                                         {t.title}
                                         {overdue && <span className="ml-1.5 text-xs text-red-400">Po termínu</span>}
                                       </button>
-                                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                                      <div className="flex items-center gap-2 flex-wrap mb-1">
                                         <span className="inline-flex items-center gap-1">
                                           <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
                                           <span className="text-xs text-[#8B9099]">{t.client.name}</span>
                                         </span>
-                                        {t.dueDate && <span className={`text-xs ${overdue ? 'text-red-400' : 'text-[#8B9099]'}`}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
-                                        <span className="text-xs text-[#8B9099]">· {logged.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
+                                        {t.dueDate && <span className={`text-xs font-medium ${dueDateClass(t.dueDate, t.status)}`}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
                                       </div>
+                                      {(t.estimatedHours != null || logged > 0) && (
+                                        <div className="text-xs text-[#8B9099] mb-2">{fmtHours(logged)}{t.estimatedHours != null ? `/${fmtHours(t.estimatedHours)}` : ''} hod</div>
+                                      )}
                                       {t.description && <p className="text-xs text-[#8B9099]/60 mb-2 line-clamp-2">{t.description}</p>}
                                       <div className="flex gap-1">
                                         {COLS.indexOf(col) > 0 && (
@@ -386,14 +400,16 @@ export default function AppPage() {
                                         </button>
                                         <button className="btn-secondary text-xs shrink-0" onClick={() => openLog(t)}>+ Hodiny</button>
                                       </div>
-                                      <div className="text-xs text-[#8B9099] flex gap-2 flex-wrap items-center mb-2">
+                                      <div className="text-xs text-[#8B9099] flex gap-2 flex-wrap items-center mb-1">
                                         <span className="inline-flex items-center gap-1">
                                           <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
                                           <span>{t.client.name}</span>
                                         </span>
-                                        {t.dueDate && <span className={overdue ? 'text-red-400' : ''}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
-                                        <span>· {logged.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
+                                        {t.dueDate && <span className={`font-medium ${dueDateClass(t.dueDate, t.status)}`}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
                                       </div>
+                                      {(t.estimatedHours != null || logged > 0) && (
+                                        <div className="text-xs text-[#8B9099] mb-2">{fmtHours(logged)}{t.estimatedHours != null ? `/${fmtHours(t.estimatedHours)}` : ''} hod</div>
+                                      )}
                                       {t.status !== 'DONE' && (
                                         <div className="flex gap-1 flex-wrap">
                                           {COLS.filter(c => c.status !== col.status && c.status !== 'DONE').map(c => (

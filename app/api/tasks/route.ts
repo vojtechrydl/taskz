@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       clientId: body.clientId,
       employeeId: body.employeeId || null,
       estimatedHours: body.estimatedHours ? parseFloat(body.estimatedHours) : null,
-      dueDate: body.dueDate ? new Date(body.dueDate) : null,
+      dueDate: body.dueDate ? (() => { const [y,m,d] = body.dueDate.split('-').map(Number); return new Date(y, m-1, d, 12, 0, 0) })() : null,
     },
     include: {
       client: { select: { id: true, name: true, color: true } },

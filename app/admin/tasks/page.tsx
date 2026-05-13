@@ -172,7 +172,7 @@ function TasksPageInner() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap mb-2">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
           <span className="inline-flex items-center gap-1">
             <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
             <span className="text-xs text-[#8B9099]">{t.client.name}</span>
@@ -183,10 +183,12 @@ function TasksPageInner() {
               · {new Date(t.dueDate).toLocaleDateString('cs')}
             </span>
           )}
-          {(t.estimatedHours || hours > 0) && (
-            <span className="text-xs text-[#8B9099]">· {fmtHours(hours)}/{t.estimatedHours != null ? fmtHours(t.estimatedHours) : '?'} hod</span>
-          )}
         </div>
+        {(t.estimatedHours != null || hours > 0) && (
+          <div className="text-xs text-[#8B9099] mb-2">
+            {fmtHours(hours)}{t.estimatedHours != null ? `/${fmtHours(t.estimatedHours)}` : ''} hod
+          </div>
+        )}
 
         {t.description && (
           <p className="text-xs text-[#8B9099]/60 mb-2 line-clamp-2">{t.description}</p>
