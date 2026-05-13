@@ -4,33 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-[#0D0E0F] text-[#F0F2F4] antialiased;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#0D0E0F];
   }
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+    @apply btn bg-[#7C3AED] text-white hover:bg-[#6D28D9] focus:ring-[#7C3AED];
   }
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-400;
+    @apply btn bg-[#1E2022] text-[#C0C6CC] border border-[#2A2D30] hover:bg-[#262A2C] hover:text-white focus:ring-[#2A2D30];
   }
   .btn-danger {
-    @apply btn bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 focus:ring-red-400;
+    @apply btn bg-transparent text-red-400 border border-[#2A2D30] hover:bg-red-500/10 hover:border-red-500/30 focus:ring-red-500;
   }
   .btn-ghost {
-    @apply btn text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:ring-gray-400;
+    @apply btn text-[#8B9099] hover:bg-[#1E2022] hover:text-[#F0F2F4] focus:ring-[#2A2D30];
   }
   .input {
-    @apply w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+    @apply w-full rounded-md border border-[#2A2D30] bg-[#1E2022] px-3 py-1.5 text-sm text-[#F0F2F4] placeholder-[#8B9099] shadow-sm focus:border-[#7C3AED] focus:outline-none focus:ring-1 focus:ring-[#7C3AED];
   }
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-xs font-medium text-[#8B9099] mb-1 uppercase tracking-wide;
   }
   .card {
-    @apply bg-white rounded-lg border border-gray-200 shadow-sm;
+    @apply bg-[#161819] rounded-lg border border-[#2A2D30];
   }
 }

@@ -12,6 +12,16 @@ type Stats = {
   totalHours: number
 }
 
+const statCards = (stats: Stats) => [
+  { label: 'Klienti', value: stats.totalClients, href: '/admin/clients', dot: 'bg-violet-400' },
+  { label: 'Zaměstnanci', value: stats.totalEmployees, href: '/admin/employees', dot: 'bg-indigo-400' },
+  { label: 'Úkoly celkem', value: stats.totalTasks, href: '/admin/tasks', dot: 'bg-sky-400' },
+  { label: 'Splněno', value: stats.doneTasks, href: '/admin/tasks', dot: 'bg-emerald-400' },
+  { label: 'Probíhá', value: stats.inProgressTasks, href: '/admin/tasks', dot: 'bg-amber-400' },
+  { label: 'Čeká', value: stats.todoTasks, href: '/admin/tasks', dot: 'bg-[#8B9099]' },
+  { label: 'Celkem hodin', value: stats.totalHours.toFixed(1), href: '/admin/tasks', dot: 'bg-violet-400' },
+]
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
 
@@ -34,29 +44,25 @@ export default function AdminDashboard() {
     })
   }, [])
 
-  const statCards = stats
-    ? [
-        { label: 'Klienti', value: stats.totalClients, href: '/admin/clients', color: 'text-purple-700 bg-purple-50' },
-        { label: 'Zaměstnanci', value: stats.totalEmployees, href: '/admin/employees', color: 'text-indigo-700 bg-indigo-50' },
-        { label: 'Úkoly celkem', value: stats.totalTasks, href: '/admin/tasks', color: 'text-blue-700 bg-blue-50' },
-        { label: 'Splněno', value: stats.doneTasks, href: '/admin/tasks', color: 'text-green-700 bg-green-50' },
-        { label: 'Probíhá', value: stats.inProgressTasks, href: '/admin/tasks', color: 'text-amber-700 bg-amber-50' },
-        { label: 'Čeká', value: stats.todoTasks, href: '/admin/tasks', color: 'text-gray-700 bg-gray-100' },
-        { label: 'Celkem hodin', value: stats.totalHours.toFixed(1), href: '/admin/tasks', color: 'text-blue-700 bg-blue-50' },
-      ]
-    : []
-
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Přehled</h1>
+      <h1 className="text-xl font-semibold text-white mb-1">Přehled</h1>
+      <p className="text-sm text-[#8B9099] mb-6">Souhrn všech aktivit</p>
       {!stats ? (
-        <p className="text-gray-500">Načítám...</p>
+        <p className="text-[#8B9099] text-sm">Načítám...</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {statCards.map((c) => (
-            <Link key={c.label} href={c.href} className="card p-5 hover:shadow-md transition-shadow">
-              <div className={`text-3xl font-bold mb-1 ${c.color.split(' ')[0]}`}>{c.value}</div>
-              <div className="text-sm text-gray-500">{c.label}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {statCards(stats).map((c) => (
+            <Link
+              key={c.label}
+              href={c.href}
+              className="card p-5 hover:border-[#3A3D40] hover:bg-[#1A1C1E] transition-colors group"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                <span className="text-xs text-[#8B9099] font-medium uppercase tracking-wide">{c.label}</span>
+              </div>
+              <div className="text-3xl font-bold text-white">{c.value}</div>
             </Link>
           ))}
         </div>

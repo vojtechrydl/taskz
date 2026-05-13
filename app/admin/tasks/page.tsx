@@ -24,9 +24,14 @@ const emptyForm = {
 
 const STATUS_LABEL: Record<string, string> = { TODO: 'Čeká', IN_PROGRESS: 'Probíhá', DONE: 'Splněno' }
 const STATUS_CLASS: Record<string, string> = {
-  TODO: 'bg-gray-100 text-gray-600',
-  IN_PROGRESS: 'bg-amber-100 text-amber-700',
-  DONE: 'bg-green-100 text-green-700',
+  TODO: 'bg-[#2A2D30] text-[#8B9099]',
+  IN_PROGRESS: 'bg-amber-500/15 text-amber-400',
+  DONE: 'bg-emerald-500/15 text-emerald-400',
+}
+const STATUS_DOT: Record<string, string> = {
+  TODO: 'bg-[#8B9099]',
+  IN_PROGRESS: 'bg-amber-400',
+  DONE: 'bg-emerald-400',
 }
 
 export default function TasksPage() {
@@ -103,38 +108,33 @@ export default function TasksPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Úkoly</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-white mb-1">Úkoly</h1>
+          <p className="text-sm text-[#8B9099]">Správa a sledování úkolů</p>
+        </div>
         <button className="btn-primary" onClick={openNew}>+ Nový úkol</button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
-        <select className="input w-auto" value={filterClient} onChange={(e) => setFilterClient(e.target.value)}>
-          <option value="">Všichni klienti</option>
-          {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select className="input w-auto" value={filterEmployee} onChange={(e) => setFilterEmployee(e.target.value)}>
-          <option value="">Všichni zaměstnanci</option>
-          {employees.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
-        </select>
-        <select className="input w-auto" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="">Všechny stavy</option>
-          <option value="TODO">Čeká</option>
-          <option value="IN_PROGRESS">Probíhá</option>
-          <option value="DONE">Splněno</option>
-        </select>
-        <select className="input w-auto" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-          <option value="">Oba typy</option>
-          <option value="ONE_TIME">Jednorázové</option>
-          <option value="RECURRING">Pravidelné</option>
-        </select>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {[
+          { value: filterClient, onChange: setFilterClient, placeholder: 'Všichni klienti', options: clients.map(c => ({ value: c.id, label: c.name })) },
+          { value: filterEmployee, onChange: setFilterEmployee, placeholder: 'Všichni zaměstnanci', options: employees.map(e => ({ value: e.id, label: e.name })) },
+          { value: filterStatus, onChange: setFilterStatus, placeholder: 'Všechny stavy', options: [{ value: 'TODO', label: 'Čeká' }, { value: 'IN_PROGRESS', label: 'Probíhá' }, { value: 'DONE', label: 'Splněno' }] },
+          { value: filterType, onChange: setFilterType, placeholder: 'Oba typy', options: [{ value: 'ONE_TIME', label: 'Jednorázové' }, { value: 'RECURRING', label: 'Pravidelné' }] },
+        ].map((f, i) => (
+          <select key={i} className="input w-auto text-sm" value={f.value} onChange={(e) => f.onChange(e.target.value)}>
+            <option value="">{f.placeholder}</option>
+            {f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        ))}
       </div>
 
       {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="card w-full max-w-lg p-6">
-            <h2 className="text-lg font-semibold mb-4">{editing ? 'Upravit úkol' : 'Nový úkol'}</h2>
+            <h2 className="text-base font-semibold text-white mb-4">{editing ? 'Upravit úkol' : 'Nový úkol'}</h2>
             <div className="space-y-3">
               <div>
                 <label className="label">Název *</label>
@@ -187,38 +187,38 @@ export default function TasksPage() {
       )}
 
       {loading ? (
-        <p className="text-gray-500">Načítám...</p>
+        <p className="text-[#8B9099] text-sm">Načítám...</p>
       ) : tasks.length === 0 ? (
-        <div className="card p-12 text-center text-gray-400">Žádné úkoly.</div>
+        <div className="card p-12 text-center text-[#8B9099] text-sm">Žádné úkoly.</div>
       ) : (
         <div className="space-y-2">
           {tasks.map((t) => {
             const hours = loggedHours(t)
             const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
             return (
-              <div key={t.id} className={`card px-4 py-3 flex items-start gap-3 ${t.status === 'DONE' ? 'opacity-60' : ''}`}>
-                {/* Type indicator */}
-                <div className="mt-0.5 shrink-0">
-                  {t.type === 'RECURRING' ? (
-                    <span title="Pravidelný úkol" className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">↺</span>
-                  ) : (
-                    <span title="Jednorázový úkol" className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-xs">1×</span>
-                  )}
+              <div key={t.id} className={`card px-4 py-3 flex items-start gap-3 hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''}`}>
+                <div className="mt-1.5 shrink-0">
+                  <div className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[t.status]}`} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium">{t.title}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${STATUS_CLASS[t.status]}`}>{STATUS_LABEL[t.status]}</span>
-                    {overdue && <span className="text-xs text-red-600 font-medium">Po termínu</span>}
+                    <span className="font-medium text-[#F0F2F4] text-sm">{t.title}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${STATUS_CLASS[t.status]}`}>
+                      {STATUS_LABEL[t.status]}
+                    </span>
+                    {t.type === 'RECURRING' && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-[#7C3AED1A] text-[#A78BFA] font-medium">↺ Pravidelný</span>
+                    )}
+                    {overdue && <span className="text-xs text-red-400 font-medium">Po termínu</span>}
                   </div>
-                  <div className="text-sm text-gray-500 mt-0.5 flex flex-wrap gap-3">
-                    <span className="font-medium text-gray-700">{t.client.name}</span>
+                  <div className="text-xs text-[#8B9099] mt-1 flex flex-wrap gap-3">
+                    <span className="text-[#C0C6CC]">{t.client.name}</span>
                     {t.employee && <span>{t.employee.name}</span>}
-                    {t.dueDate && <span className={overdue ? 'text-red-500' : ''}>{new Date(t.dueDate).toLocaleDateString('cs')}</span>}
+                    {t.dueDate && <span className={overdue ? 'text-red-400' : ''}>{new Date(t.dueDate).toLocaleDateString('cs')}</span>}
                     <span>{hours.toFixed(1)} / {t.estimatedHours ?? '?'} hod</span>
                   </div>
-                  {t.description && <div className="text-sm text-gray-400 mt-0.5 truncate">{t.description}</div>}
+                  {t.description && <div className="text-xs text-[#8B9099]/60 mt-0.5 truncate">{t.description}</div>}
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
@@ -227,11 +227,11 @@ export default function TasksPage() {
                       {t.status === 'TODO' && (
                         <button className="btn-ghost text-xs" onClick={() => setStatus(t.id, 'IN_PROGRESS')}>Zahájit</button>
                       )}
-                      <button className="btn-ghost text-xs text-green-700" onClick={() => setStatus(t.id, 'DONE')}>✓ Splněno</button>
+                      <button className="btn-ghost text-xs text-emerald-400 hover:text-emerald-300" onClick={() => setStatus(t.id, 'DONE')}>✓ Splněno</button>
                     </>
                   )}
                   {t.status === 'DONE' && t.type === 'RECURRING' && (
-                    <button className="btn-ghost text-xs text-blue-600" onClick={() => resetTask(t.id)}>↺ Reset</button>
+                    <button className="btn-ghost text-xs text-[#A78BFA]" onClick={() => resetTask(t.id)}>↺ Reset</button>
                   )}
                   <button className="btn-secondary text-xs" onClick={() => openEdit(t)}>Upravit</button>
                   <button className="btn-danger text-xs" onClick={() => del(t.id, t.title)}>Smazat</button>

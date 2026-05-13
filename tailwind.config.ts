@@ -8,12 +8,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        surface: {
+          DEFAULT: '#161819',
+          raised: '#1E2022',
+        },
+        border: {
+          DEFAULT: '#2A2D30',
+        },
         brand: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          DEFAULT: '#7C3AED',
+          hover: '#6D28D9',
+          muted: '#7C3AED1A',
         },
       },
     },
