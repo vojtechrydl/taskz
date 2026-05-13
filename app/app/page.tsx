@@ -59,6 +59,9 @@ export default function AppPage() {
   const [filterClient, setFilterClient] = useState('')
   const [tab, setTab] = useState<'tasks' | 'hours'>('tasks')
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
+  const [detailTask, setDetailTask] = useState<Task | null>(null)
+  const [comments, setComments] = useState<{ id: string; text: string; createdAt: string; employee: { id: string; name: string } }[]>([])
+  const [commentText, setCommentText] = useState('')
 
   useEffect(() => {
     fetch('/api/employees')
@@ -142,6 +145,33 @@ export default function AppPage() {
     })
     setManualModal(false)
     loadData()
+  }
+
+  const openDetail = async (t: Task) => {
+    setDetailTask(t)
+    setCommentText('')
+    const data = await fetch(`/api/tasks/${t.id}/comments`).then(r => r.json())
+    setComments(data)
+  }
+
+  const submitComment = async () => {
+    if (!commentText.trim() || !detailTask || !selectedId) return
+    const c = await fetch(`/api/tasks/${detailTask.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId: selectedId, text: commentText.trim() }),
+    }).then(r => r.json())
+    setComments(prev => [...prev, c])
+    setCommentText('')
+  }
+
+  const renderDescription = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    return text.split(urlRegex).map((part, i) =>
+      urlRegex.test(part)
+        ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-[#A78BFA] underline hover:text-[#7C3AED] break-all">{part}</a>
+        : <span key={i}>{part}</span>
+    )
   }
 
   const delEntry = async (id: string) => {
@@ -296,11 +326,11 @@ export default function AppPage() {
                                       onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
                                       onDragEnd={() => setDragOverCol(null)}
                                     >
-                                      <div className="font-medium text-sm text-[#F0F2F4] mb-2 leading-snug">
+                                      <button className="font-medium text-sm text-[#F0F2F4] mb-2 leading-snug text-left hover:text-[#A78BFA] transition-colors w-full" onClick={() => openDetail(t)}>
                                         {t.type === 'RECURRING' && <span className="text-[#A78BFA] mr-1">↺</span>}
                                         {t.title}
                                         {overdue && <span className="ml-1.5 text-xs text-red-400">Po termínu</span>}
-                                      </div>
+                                      </button>
                                       <div className="flex items-center gap-2 flex-wrap mb-2">
                                         <span className="inline-flex items-center gap-1">
                                           <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
@@ -350,10 +380,10 @@ export default function AppPage() {
                                   return (
                                     <div key={t.id} className={`card px-4 py-3 ${t.status === 'DONE' ? 'opacity-50' : ''}`}>
                                       <div className="flex items-start justify-between gap-2 mb-1">
-                                        <span className={`font-medium text-sm text-[#F0F2F4] ${t.status === 'DONE' ? 'line-through text-[#8B9099]' : ''}`}>
+                                        <button className={`font-medium text-sm text-left hover:text-[#A78BFA] transition-colors ${t.status === 'DONE' ? 'line-through text-[#8B9099]' : 'text-[#F0F2F4]'}`} onClick={() => openDetail(t)}>
                                           {t.type === 'RECURRING' && <span className="text-[#A78BFA] mr-1">↺</span>}
                                           {t.title}
-                                        </span>
+                                        </button>
                                         <button className="btn-secondary text-xs shrink-0" onClick={() => openLog(t)}>+ Hodiny</button>
                                       </div>
                                       <div className="text-xs text-[#8B9099] flex gap-2 flex-wrap items-center mb-2">
@@ -457,6 +487,88 @@ export default function AppPage() {
           </>
         )}
       </main>
+
+      {detailTask && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="card w-full max-w-lg flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-[#2A2D30]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold text-white leading-snug">{detailTask.title}</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: detailTask.client.color || '#6B7280' }} />
+                      <span className="text-xs text-[#8B9099]">{detailTask.client.name}</span>
+                    </span>
+                    {detailTask.dueDate && (
+                      <span className="text-xs text-[#8B9099]">· {new Date(detailTask.dueDate).toLocaleDateString('cs')}</span>
+                    )}
+                  </div>
+                </div>
+                <button className="btn-ghost text-lg leading-none shrink-0" onClick={() => setDetailTask(null)}>✕</button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+              {/* Description */}
+              {detailTask.description ? (
+                <div>
+                  <p className="text-xs font-semibold text-[#8B9099] uppercase tracking-wide mb-2">Popis</p>
+                  <div className="text-sm text-[#C0C6CC] leading-relaxed whitespace-pre-wrap">
+                    {renderDescription(detailTask.description)}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-[#8B9099]/60 italic">Bez popisu.</p>
+              )}
+
+              {/* Comments */}
+              <div>
+                <p className="text-xs font-semibold text-[#8B9099] uppercase tracking-wide mb-3">
+                  Komentáře {comments.length > 0 && <span className="text-[#8B9099]/60">({comments.length})</span>}
+                </p>
+                {comments.length === 0 ? (
+                  <p className="text-sm text-[#8B9099]/60 italic">Zatím žádné komentáře.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {comments.map(c => (
+                      <div key={c.id} className="flex gap-3">
+                        <div className="w-7 h-7 rounded-full bg-[#7C3AED1A] border border-[#7C3AED]/30 text-[#A78BFA] text-xs font-semibold flex items-center justify-center shrink-0">
+                          {c.employee.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 mb-0.5">
+                            <span className="text-xs font-medium text-[#F0F2F4]">{c.employee.name}</span>
+                            <span className="text-xs text-[#8B9099]/60">{new Date(c.createdAt).toLocaleString('cs', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <p className="text-sm text-[#C0C6CC] leading-relaxed whitespace-pre-wrap">{c.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Add comment */}
+            <div className="px-6 pb-5 pt-4 border-t border-[#2A2D30]">
+              <div className="flex gap-2">
+                <textarea
+                  className="input resize-none flex-1 text-sm"
+                  rows={2}
+                  placeholder="Přidat komentář..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitComment() }}
+                />
+                <button className="btn-primary self-end" onClick={submitComment}>Odeslat</button>
+              </div>
+              <p className="text-xs text-[#8B9099]/40 mt-1">Cmd+Enter pro odeslání</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {manualModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">

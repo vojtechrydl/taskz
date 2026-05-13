@@ -27,6 +27,7 @@ model Employee {
   createdAt   DateTime    @default(now())
   tasks       Task[]
   timeEntries TimeEntry[]
+  comments    Comment[]
 }
 
 enum TaskType {
@@ -57,6 +58,17 @@ model Task {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   timeEntries    TimeEntry[]
+  comments       Comment[]
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  text       String
+  createdAt  DateTime @default(now())
 }
 
 model TimeEntry {
