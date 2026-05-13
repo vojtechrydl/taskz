@@ -145,7 +145,7 @@ function TasksPageInner() {
       <div
         className={`card p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''} hover:border-[#3A3D40] transition-colors`}
         draggable={!mobile}
-        onDragStart={() => setDraggedId(t.id)}
+        onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move'; setDraggedId(t.id) }}
         onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -240,9 +240,9 @@ function TasksPageInner() {
                 <div
                   key={col.status}
                   className="flex flex-col min-h-0"
-                  onDragOver={(e) => { e.preventDefault(); setDragOverCol(col.status) }}
+                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(col.status) }}
                   onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCol(null) }}
-                  onDrop={() => onDrop(col.status)}
+                  onDrop={(e) => { e.preventDefault(); onDrop(col.status) }}
                 >
                   {/* Column header */}
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0 border-[#2A2D30] bg-[#161819] transition-colors ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : ''}`}>
