@@ -53,7 +53,6 @@ function TasksPageInner() {
   const [filterClient, setFilterClient] = useState('')
   const [filterEmployee, setFilterEmployee] = useState('')
   const [filterType, setFilterType] = useState('')
-  const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
   const handledNewFor = useRef(false)
 
@@ -122,12 +121,14 @@ function TasksPageInner() {
     load()
   }
 
-  const onDrop = (status: string) => {
-    if (draggedId && draggedId !== status) {
-      setStatus(draggedId, status)
-    }
-    setDraggedId(null)
-    setDragOverCol(null)
+  const COL_STATUSES = COLUMNS.map(c => c.status)
+
+  const moveCard = (taskId: string, direction: 'left' | 'right') => {
+    const task = tasks.find(t => t.id === taskId)
+    if (!task) return
+    const idx = COL_STATUSES.indexOf(task.status)
+    const next = direction === 'right' ? COL_STATUSES[idx + 1] : COL_STATUSES[idx - 1]
+    if (next) setStatus(taskId, next)
   }
 
   const loggedHours = (t: Task) => t.timeEntries.reduce((s, e) => s + e.hours, 0)
@@ -145,8 +146,8 @@ function TasksPageInner() {
       <div
         className={`card p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''} hover:border-[#3A3D40] transition-colors`}
         draggable={!mobile}
-        onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move'; setDraggedId(t.id) }}
-        onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}
+        onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
+        onDragEnd={() => setDragOverCol(null)}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <span className={`font-medium text-sm text-[#F0F2F4] leading-snug ${t.status === 'DONE' ? 'line-through text-[#8B9099]' : ''}`}>
@@ -180,14 +181,12 @@ function TasksPageInner() {
           <p className="text-xs text-[#8B9099]/60 mb-2 line-clamp-2">{t.description}</p>
         )}
 
-        <div className="flex gap-1 flex-wrap">
-          {mobile && t.status !== 'DONE' && COLUMNS.filter(c => c.status !== t.status && c.status !== 'DONE').map(c => (
-            <button key={c.status} className="btn-ghost text-xs py-0.5 px-2" onClick={() => setStatus(t.id, c.status)}>
-              → {c.label}
-            </button>
-          ))}
-          {mobile && t.status !== 'DONE' && (
-            <button className="btn-ghost text-xs py-0.5 px-2 text-emerald-400" onClick={() => setStatus(t.id, 'DONE')}>✓ Hotovo</button>
+        <div className="flex gap-1 flex-wrap items-center">
+          {COL_STATUSES.indexOf(t.status) > 0 && (
+            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'left')} title="Přesunout vlevo">←</button>
+          )}
+          {COL_STATUSES.indexOf(t.status) < COL_STATUSES.length - 1 && (
+            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'right')} title="Přesunout vpravo">→</button>
           )}
           {t.status === 'DONE' && t.type === 'RECURRING' && (
             <button className="btn-ghost text-xs py-0.5 px-2 text-[#A78BFA]" onClick={() => resetTask(t.id)}>↺ Reset</button>
@@ -242,7 +241,7 @@ function TasksPageInner() {
                   className="flex flex-col min-h-0"
                   onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(col.status) }}
                   onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCol(null) }}
-                  onDrop={(e) => { e.preventDefault(); onDrop(col.status) }}
+                  onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) setStatus(id, col.status); setDragOverCol(null) }}
                 >
                   {/* Column header */}
                   <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0 border-[#2A2D30] bg-[#161819] transition-colors ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : ''}`}>

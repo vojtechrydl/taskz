@@ -58,7 +58,6 @@ export default function AppPage() {
   const [manualForm, setManualForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10), clientId: '' })
   const [filterClient, setFilterClient] = useState('')
   const [tab, setTab] = useState<'tasks' | 'hours'>('tasks')
-  const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
   useEffect(() => {
@@ -279,7 +278,7 @@ export default function AppPage() {
                             <div key={col.status} className="flex flex-col"
                               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(col.status) }}
                               onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCol(null) }}
-                              onDrop={(e) => { e.preventDefault(); if (draggedId) { setStatus(draggedId, col.status); setDraggedId(null); setDragOverCol(null) } }}
+                              onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) setStatus(id, col.status); setDragOverCol(null) }}
                             >
                               <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0 border-[#2A2D30] bg-[#161819] ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : ''}`}>
                                 <div className={`w-2 h-2 rounded-full ${col.dot}`} />
@@ -294,8 +293,8 @@ export default function AppPage() {
                                     <div key={t.id}
                                       className={`card p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''}`}
                                       draggable
-                                      onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move'; setDraggedId(t.id) }}
-                                      onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}
+                                      onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
+                                      onDragEnd={() => setDragOverCol(null)}
                                     >
                                       <div className="font-medium text-sm text-[#F0F2F4] mb-2 leading-snug">
                                         {t.type === 'RECURRING' && <span className="text-[#A78BFA] mr-1">↺</span>}
@@ -311,7 +310,15 @@ export default function AppPage() {
                                         <span className="text-xs text-[#8B9099]">· {logged.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
                                       </div>
                                       {t.description && <p className="text-xs text-[#8B9099]/60 mb-2 line-clamp-2">{t.description}</p>}
-                                      <button className="btn-secondary text-xs w-full" onClick={() => openLog(t)}>+ Hodiny</button>
+                                      <div className="flex gap-1">
+                                        {COLS.indexOf(col) > 0 && (
+                                          <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => setStatus(t.id, COLS[COLS.indexOf(col) - 1].status)} title="Přesunout vlevo">←</button>
+                                        )}
+                                        {COLS.indexOf(col) < COLS.length - 1 && (
+                                          <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => setStatus(t.id, COLS[COLS.indexOf(col) + 1].status)} title="Přesunout vpravo">→</button>
+                                        )}
+                                        <button className="btn-secondary text-xs flex-1" onClick={() => openLog(t)}>+ Hodiny</button>
+                                      </div>
                                     </div>
                                   )
                                 })}
