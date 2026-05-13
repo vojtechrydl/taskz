@@ -55,6 +55,7 @@ function TasksPageInner() {
   const [filterType, setFilterType] = useState('')
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
   const handledNewFor = useRef(false)
+  const dateInputRef = useRef<HTMLInputElement>(null)
 
   const load = async () => {
     setLoading(true)
@@ -99,9 +100,10 @@ function TasksPageInner() {
     if (!form.title.trim() || !form.clientId) return
     const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
     const method = editing ? 'PATCH' : 'POST'
+    const dueDate = dateInputRef.current?.value || null
     const payload = {
       ...form,
-      dueDate: form.dueDate || null,
+      dueDate,
       estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null,
     }
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -351,7 +353,13 @@ function TasksPageInner() {
                 </div>
                 <div>
                   <label className="label">Termín</label>
-                  <input className="input" type="date" value={form.dueDate} onChange={(e) => setForm(p => ({ ...p, dueDate: e.target.value }))} />
+                  <input
+                    ref={dateInputRef}
+                    className="input"
+                    type="date"
+                    key={editing ?? 'new'}
+                    defaultValue={form.dueDate}
+                  />
                 </div>
               </div>
               <div>
