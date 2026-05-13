@@ -56,9 +56,10 @@ export default function AppPage() {
   const [logForm, setLogForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10) })
   const [manualModal, setManualModal] = useState(false)
   const [manualForm, setManualForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10), clientId: '' })
-  const [filterStatus, setFilterStatus] = useState('')
   const [filterClient, setFilterClient] = useState('')
   const [tab, setTab] = useState<'tasks' | 'hours'>('tasks')
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/employees')
@@ -152,7 +153,6 @@ export default function AppPage() {
 
   const totalHours = entries.reduce((s, e) => s + e.hours, 0)
   const filteredTasks = tasks.filter((t) =>
-    (!filterStatus || t.status === filterStatus) &&
     (!filterClient || t.client.id === filterClient)
   )
 
@@ -252,91 +252,133 @@ export default function AppPage() {
 
             {tab === 'tasks' && (
               <>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <div className="flex gap-2">
-                    {['', 'TODO', 'IN_PROGRESS', 'DONE'].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setFilterStatus(s)}
-                        className={`btn text-xs ${filterStatus === s ? 'btn-primary' : 'btn-secondary'}`}
-                      >
-                        {s === '' ? 'Vše' : STATUS_LABEL[s]}
-                      </button>
-                    ))}
-                  </div>
-                  {taskClients.length > 1 && (
-                    <select
-                      className="input w-auto text-xs"
-                      value={filterClient}
-                      onChange={(e) => setFilterClient(e.target.value)}
-                    >
+                {taskClients.length > 1 && (
+                  <div className="mb-4">
+                    <select className="input w-auto text-sm" value={filterClient} onChange={(e) => setFilterClient(e.target.value)}>
                       <option value="">Všichni klienti</option>
-                      {taskClients.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
+                      {taskClients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
-                  )}
-                </div>
-
-                {filteredTasks.length === 0 ? (
-                  <div className="card p-10 text-center text-[#8B9099] text-sm">Žádné úkoly.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {filteredTasks.map((t) => {
-                      const logged = t.timeEntries.reduce((s, e) => s + e.hours, 0)
-                      const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
-                      return (
-                        <div key={t.id} className={`card px-4 py-3 flex items-start gap-3 hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''}`}>
-                          <button
-                            onClick={() => setStatus(t.id, t.status === 'DONE' ? 'TODO' : 'DONE')}
-                            className={`mt-0.5 w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${
-                              t.status === 'DONE'
-                                ? 'bg-emerald-500 border-emerald-500 text-white'
-                                : 'border-[#3A3D40] hover:border-emerald-500'
-                            }`}
-                          >
-                            {t.status === 'DONE' && <span className="text-xs font-bold">✓</span>}
-                          </button>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {t.type === 'RECURRING' && (
-                                <span className="text-[#A78BFA] text-xs font-bold">↺</span>
-                              )}
-                              <span className={`font-medium text-sm text-[#F0F2F4] ${t.status === 'DONE' ? 'line-through text-[#8B9099]' : ''}`}>
-                                {t.title}
-                              </span>
-                              <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${STATUS_CLASS[t.status]}`}>
-                                {STATUS_LABEL[t.status]}
-                              </span>
-                              {overdue && <span className="text-xs text-red-400 font-medium">Po termínu</span>}
-                            </div>
-                            <div className="text-xs text-[#8B9099] flex gap-3 mt-1 flex-wrap items-center">
-                              <span className="inline-flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-sm inline-block" style={{ backgroundColor: t.client.color || '#6B7280' }} />
-                                <span className="text-[#C0C6CC]">{t.client.name}</span>
-                              </span>
-                              {t.dueDate && (
-                                <span className={overdue ? 'text-red-400' : ''}>
-                                  {new Date(t.dueDate).toLocaleDateString('cs')}
-                                </span>
-                              )}
-                              <span>{logged.toFixed(1)} / {t.estimatedHours ?? '?'} hod</span>
-                            </div>
-                            {t.description && <p className="text-xs text-[#8B9099]/60 mt-0.5">{t.description}</p>}
-                          </div>
-
-                          <div className="flex gap-1.5 shrink-0">
-                            {t.status === 'TODO' && (
-                              <button className="btn-ghost text-xs" onClick={() => setStatus(t.id, 'IN_PROGRESS')}>Zahájit</button>
-                            )}
-                            <button className="btn-secondary text-xs" onClick={() => openLog(t)}>+ Hodiny</button>
-                          </div>
-                        </div>
-                      )
-                    })}
                   </div>
                 )}
+
+                {/* DESKTOP: Kanban */}
+                {(() => {
+                  const COLS = [
+                    { status: 'TODO',        label: 'Čeká',    dot: 'bg-[#8B9099]' },
+                    { status: 'ASSIGNED',    label: 'Zadáno',  dot: 'bg-sky-400' },
+                    { status: 'IN_PROGRESS', label: 'Probíhá', dot: 'bg-amber-400' },
+                    { status: 'DONE',        label: 'Hotovo',  dot: 'bg-emerald-400' },
+                  ] as const
+                  return (
+                    <>
+                      <div className="hidden md:grid grid-cols-4 gap-3">
+                        {COLS.map((col) => {
+                          const colTasks = filteredTasks.filter(t => t.status === col.status)
+                          const isOver = dragOverCol === col.status
+                          return (
+                            <div key={col.status} className="flex flex-col"
+                              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverCol(col.status) }}
+                              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverCol(null) }}
+                              onDrop={(e) => { e.preventDefault(); if (draggedId) { setStatus(draggedId, col.status); setDraggedId(null); setDragOverCol(null) } }}
+                            >
+                              <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0 border-[#2A2D30] bg-[#161819] ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : ''}`}>
+                                <div className={`w-2 h-2 rounded-full ${col.dot}`} />
+                                <span className="text-sm font-medium text-[#F0F2F4]">{col.label}</span>
+                                <span className="ml-auto text-xs text-[#8B9099] bg-[#2A2D30] px-1.5 py-0.5 rounded">{colTasks.length}</span>
+                              </div>
+                              <div className={`p-2 rounded-b-lg border border-[#2A2D30] space-y-2 min-h-[160px] ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : 'bg-[#0D0E0F]'}`}>
+                                {colTasks.map(t => {
+                                  const logged = t.timeEntries.reduce((s, e) => s + e.hours, 0)
+                                  const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
+                                  return (
+                                    <div key={t.id}
+                                      className={`card p-3 cursor-grab active:cursor-grabbing hover:border-[#3A3D40] transition-colors ${t.status === 'DONE' ? 'opacity-50' : ''} ${draggedId === t.id ? 'opacity-30' : ''}`}
+                                      draggable
+                                      onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move'; setDraggedId(t.id) }}
+                                      onDragEnd={() => { setDraggedId(null); setDragOverCol(null) }}
+                                    >
+                                      <div className="font-medium text-sm text-[#F0F2F4] mb-2 leading-snug">
+                                        {t.type === 'RECURRING' && <span className="text-[#A78BFA] mr-1">↺</span>}
+                                        {t.title}
+                                        {overdue && <span className="ml-1.5 text-xs text-red-400">Po termínu</span>}
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                                        <span className="inline-flex items-center gap-1">
+                                          <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
+                                          <span className="text-xs text-[#8B9099]">{t.client.name}</span>
+                                        </span>
+                                        {t.dueDate && <span className={`text-xs ${overdue ? 'text-red-400' : 'text-[#8B9099]'}`}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
+                                        <span className="text-xs text-[#8B9099]">· {logged.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
+                                      </div>
+                                      {t.description && <p className="text-xs text-[#8B9099]/60 mb-2 line-clamp-2">{t.description}</p>}
+                                      <button className="btn-secondary text-xs w-full" onClick={() => openLog(t)}>+ Hodiny</button>
+                                    </div>
+                                  )
+                                })}
+                                {colTasks.length === 0 && (
+                                  <div className="flex items-center justify-center h-16 text-xs text-[#8B9099]/40">Přetáhni sem</div>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* MOBILE: Grouped list */}
+                      <div className="md:hidden space-y-5">
+                        {COLS.map((col) => {
+                          const colTasks = filteredTasks.filter(t => t.status === col.status)
+                          if (colTasks.length === 0) return null
+                          return (
+                            <div key={col.status}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className={`w-2 h-2 rounded-full ${col.dot}`} />
+                                <span className="text-xs font-semibold text-[#8B9099] uppercase tracking-wide">{col.label}</span>
+                                <span className="text-xs text-[#8B9099]/60">{colTasks.length}</span>
+                              </div>
+                              <div className="space-y-2">
+                                {colTasks.map(t => {
+                                  const logged = t.timeEntries.reduce((s, e) => s + e.hours, 0)
+                                  const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
+                                  return (
+                                    <div key={t.id} className={`card px-4 py-3 ${t.status === 'DONE' ? 'opacity-50' : ''}`}>
+                                      <div className="flex items-start justify-between gap-2 mb-1">
+                                        <span className={`font-medium text-sm text-[#F0F2F4] ${t.status === 'DONE' ? 'line-through text-[#8B9099]' : ''}`}>
+                                          {t.type === 'RECURRING' && <span className="text-[#A78BFA] mr-1">↺</span>}
+                                          {t.title}
+                                        </span>
+                                        <button className="btn-secondary text-xs shrink-0" onClick={() => openLog(t)}>+ Hodiny</button>
+                                      </div>
+                                      <div className="text-xs text-[#8B9099] flex gap-2 flex-wrap items-center mb-2">
+                                        <span className="inline-flex items-center gap-1">
+                                          <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: t.client.color || '#6B7280' }} />
+                                          <span>{t.client.name}</span>
+                                        </span>
+                                        {t.dueDate && <span className={overdue ? 'text-red-400' : ''}>· {new Date(t.dueDate).toLocaleDateString('cs')}</span>}
+                                        <span>· {logged.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
+                                      </div>
+                                      {t.status !== 'DONE' && (
+                                        <div className="flex gap-1 flex-wrap">
+                                          {COLS.filter(c => c.status !== col.status && c.status !== 'DONE').map(c => (
+                                            <button key={c.status} className="btn-ghost text-xs py-0.5 px-2" onClick={() => setStatus(t.id, c.status)}>→ {c.label}</button>
+                                          ))}
+                                          <button className="btn-ghost text-xs py-0.5 px-2 text-emerald-400" onClick={() => setStatus(t.id, 'DONE')}>✓ Hotovo</button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                        {filteredTasks.length === 0 && (
+                          <div className="card p-10 text-center text-[#8B9099] text-sm">Žádné úkoly.</div>
+                        )}
+                      </div>
+                    </>
+                  )
+                })()}
               </>
             )}
 
