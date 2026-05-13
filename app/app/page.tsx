@@ -377,7 +377,7 @@ export default function AppPage() {
                               <div key={e.id} className="flex items-center px-4 py-3 gap-4">
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-sm text-[#F0F2F4]">
-                                    {e.task ? e.task.title : <span className="text-[#8B9099] italic">Bez úkolu</span>}
+                                    {e.task ? e.task.title : (e.notes || <span className="text-[#8B9099] italic">Bez úkolu</span>)}
                                   </div>
                                   <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5 items-center flex-wrap">
                                     {(() => { const c = e.task?.client ?? e.client; return c ? (
@@ -386,8 +386,9 @@ export default function AppPage() {
                                         <span>{c.name}</span>
                                       </span>
                                     ) : null })()}
+                                    {!e.task && <span className="text-[#8B9099]/60 italic">Bez úkolu</span>}
                                     <span>{new Date(e.date).toLocaleDateString('cs')}</span>
-                                    {e.notes && <span className="text-[#8B9099]/60">{e.notes}</span>}
+                                    {e.task && e.notes && <span className="text-[#8B9099]/60">{e.notes}</span>}
                                   </div>
                                 </div>
                                 <div className="font-semibold text-[#A78BFA] text-sm shrink-0">{e.hours} hod</div>
@@ -399,10 +400,6 @@ export default function AppPage() {
                       )
                     })}
 
-                    <div className="card px-4 py-3 flex justify-between text-sm font-semibold">
-                      <span className="text-[#8B9099]">Celkem</span>
-                      <span className="text-white">{filteredEntries.reduce((s, e) => s + e.hours, 0).toFixed(1)} hod</span>
-                    </div>
                   </div>
                 )}
               </div>
