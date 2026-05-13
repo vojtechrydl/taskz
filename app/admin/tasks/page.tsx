@@ -132,6 +132,17 @@ function TasksPageInner() {
   }
 
   const loggedHours = (t: Task) => t.timeEntries.reduce((s, e) => s + e.hours, 0)
+  const fmtHours = (n: number) => n % 1 === 0 ? n.toString() : n.toFixed(1)
+
+  const dueDateClass = (dueDate: string, status: string) => {
+    if (status === 'DONE') return 'text-[#8B9099]'
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
+    const due = new Date(dueDate); due.setHours(0, 0, 0, 0)
+    if (due <= today) return 'text-red-400'
+    if (due.getTime() === tomorrow.getTime()) return 'text-amber-400'
+    return 'text-emerald-400'
+  }
 
   const filteredTasks = tasks.filter(t =>
     (!filterClient || t.client.id === filterClient) &&
@@ -141,10 +152,10 @@ function TasksPageInner() {
 
   const TaskCard = ({ t, mobile = false }: { t: Task; mobile?: boolean }) => {
     const hours = loggedHours(t)
-    const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
+    const idx = COL_STATUSES.indexOf(t.status)
     return (
       <div
-        className={`card p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} hover:border-[#3A3D40] transition-colors`}
+        className={`bg-[#1E2022] rounded-lg border border-[#2A2D30] shadow-sm p-3 ${!mobile ? 'cursor-grab active:cursor-grabbing' : ''} ${t.status === 'DONE' ? 'opacity-50' : ''} hover:border-[#3A3D40] hover:shadow-md transition-all`}
         draggable={!mobile}
         onDragStart={(e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
         onDragEnd={() => setDragOverCol(null)}
@@ -168,12 +179,12 @@ function TasksPageInner() {
           </span>
           {t.employee && <span className="text-xs text-[#8B9099]">· {t.employee.name}</span>}
           {t.dueDate && (
-            <span className={`text-xs ${overdue ? 'text-red-400' : 'text-[#8B9099]'}`}>
+            <span className={`text-xs font-medium ${dueDateClass(t.dueDate, t.status)}`}>
               · {new Date(t.dueDate).toLocaleDateString('cs')}
             </span>
           )}
           {(t.estimatedHours || hours > 0) && (
-            <span className="text-xs text-[#8B9099]">· {hours.toFixed(1)}/{t.estimatedHours ?? '?'} hod</span>
+            <span className="text-xs text-[#8B9099]">· {fmtHours(hours)}/{t.estimatedHours != null ? fmtHours(t.estimatedHours) : '?'} hod</span>
           )}
         </div>
 
@@ -182,11 +193,15 @@ function TasksPageInner() {
         )}
 
         <div className="flex gap-1 flex-wrap items-center">
-          {COL_STATUSES.indexOf(t.status) > 0 && (
-            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'left')} title="Přesunout vlevo">←</button>
+          {idx > 0 && (
+            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'left')}>
+              {mobile ? '↑' : '←'}
+            </button>
           )}
-          {COL_STATUSES.indexOf(t.status) < COL_STATUSES.length - 1 && (
-            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'right')} title="Přesunout vpravo">→</button>
+          {idx < COL_STATUSES.length - 1 && (
+            <button className="btn-ghost text-xs py-0.5 px-2" onClick={() => moveCard(t.id, 'right')}>
+              {mobile ? '↓' : '→'}
+            </button>
           )}
           {t.status === 'DONE' && t.type === 'RECURRING' && (
             <button className="btn-ghost text-xs py-0.5 px-2 text-[#A78BFA]" onClick={() => resetTask(t.id)}>↺ Reset</button>
@@ -244,14 +259,14 @@ function TasksPageInner() {
                   onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) setStatus(id, col.status); setDragOverCol(null) }}
                 >
                   {/* Column header */}
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0 border-[#2A2D30] bg-[#161819] transition-colors ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : ''}`}>
+                  <div className={`flex items-center gap-2 px-3 py-2.5 rounded-t-lg border border-b-0 transition-colors ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/10' : 'border-[#2A2D30] bg-[#161819]'}`}>
                     <div className={`w-2 h-2 rounded-full ${col.dot}`} />
-                    <span className="text-sm font-medium text-[#F0F2F4]">{col.label}</span>
-                    <span className="ml-auto text-xs text-[#8B9099] bg-[#2A2D30] px-1.5 py-0.5 rounded">{colTasks.length}</span>
+                    <span className="text-sm font-semibold text-[#F0F2F4]">{col.label}</span>
+                    <span className="ml-auto text-xs text-[#8B9099] bg-[#0D0E0F] px-1.5 py-0.5 rounded-full">{colTasks.length}</span>
                   </div>
 
                   {/* Column body */}
-                  <div className={`flex-1 overflow-y-auto p-2 rounded-b-lg border border-[#2A2D30] transition-colors space-y-2 min-h-[200px] ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : 'bg-[#0D0E0F]'}`}>
+                  <div className={`flex-1 overflow-y-auto p-2 rounded-b-lg border border-[#2A2D30] transition-colors space-y-2 min-h-[200px] ${isOver ? 'border-[#7C3AED]/50 bg-[#7C3AED]/5' : 'bg-[#111214]'}`}>
                     {colTasks.map(t => <TaskCard key={t.id} t={t} />)}
                     {colTasks.length === 0 && (
                       <div className="flex items-center justify-center h-20 text-xs text-[#8B9099]/40">
