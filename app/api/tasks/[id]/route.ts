@@ -23,7 +23,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     data,
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, color: true } },
       employee: { select: { id: true, name: true } },
       timeEntries: { select: { hours: true } },
     },

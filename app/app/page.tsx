@@ -9,7 +9,7 @@ type Task = {
   description: string | null
   type: 'ONE_TIME' | 'RECURRING'
   status: 'TODO' | 'IN_PROGRESS' | 'DONE'
-  client: { id: string; name: string }
+  client: { id: string; name: string; color: string | null }
   employee: { id: string; name: string } | null
   estimatedHours: number | null
   dueDate: string | null
@@ -21,7 +21,7 @@ type TimeEntry = {
   hours: number
   date: string
   notes: string | null
-  task: { id: string; title: string }
+  task: { id: string; title: string; client: { id: string; name: string; color: string | null } }
   employee: { id: string; name: string }
 }
 
@@ -32,6 +32,17 @@ const STATUS_CLASS: Record<string, string> = {
 }
 const STATUS_LABEL: Record<string, string> = { TODO: 'Čeká', IN_PROGRESS: 'Probíhá', DONE: 'Splněno' }
 
+const MONTH_NAMES = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']
+
+function monthKey(date: string) {
+  const d = new Date(date)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+function monthLabel(key: string) {
+  const [year, month] = key.split('-')
+  return `${MONTH_NAMES[parseInt(month) - 1]} ${year}`
+}
+
 export default function AppPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [selectedId, setSelectedId] = useState<string>('')
@@ -41,6 +52,7 @@ export default function AppPage() {
   const [logModal, setLogModal] = useState<{ taskId: string; title: string } | null>(null)
   const [logForm, setLogForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10) })
   const [filterStatus, setFilterStatus] = useState('')
+  const [filterClient, setFilterClient] = useState('')
   const [tab, setTab] = useState<'tasks' | 'hours'>('tasks')
 
   useEffect(() => {
@@ -111,7 +123,26 @@ export default function AppPage() {
   }
 
   const totalHours = entries.reduce((s, e) => s + e.hours, 0)
-  const filteredTasks = tasks.filter((t) => !filterStatus || t.status === filterStatus)
+  const filteredTasks = tasks.filter((t) =>
+    (!filterStatus || t.status === filterStatus) &&
+    (!filterClient || t.client.id === filterClient)
+  )
+
+  // Unique clients from tasks for filter
+  const taskClients = Array.from(new Map(tasks.map(t => [t.client.id, t.client])).values())
+
+  // Group entries by month, optionally filtered by client
+  const filteredEntries = filterClient
+    ? entries.filter(e => e.task.client.id === filterClient)
+    : entries
+
+  const entriesByMonth = filteredEntries.reduce<Record<string, TimeEntry[]>>((acc, e) => {
+    const key = monthKey(e.date)
+    if (!acc[key]) acc[key] = []
+    acc[key].push(e)
+    return acc
+  }, {})
+  const sortedMonths = Object.keys(entriesByMonth).sort((a, b) => b.localeCompare(a))
 
   if (employees.length === 0) {
     return (
@@ -193,16 +224,30 @@ export default function AppPage() {
 
             {tab === 'tasks' && (
               <>
-                <div className="flex gap-2 mb-4">
-                  {['', 'TODO', 'IN_PROGRESS', 'DONE'].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setFilterStatus(s)}
-                      className={`btn text-xs ${filterStatus === s ? 'btn-primary' : 'btn-secondary'}`}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex gap-2">
+                    {['', 'TODO', 'IN_PROGRESS', 'DONE'].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setFilterStatus(s)}
+                        className={`btn text-xs ${filterStatus === s ? 'btn-primary' : 'btn-secondary'}`}
+                      >
+                        {s === '' ? 'Vše' : STATUS_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
+                  {taskClients.length > 1 && (
+                    <select
+                      className="input w-auto text-xs"
+                      value={filterClient}
+                      onChange={(e) => setFilterClient(e.target.value)}
                     >
-                      {s === '' ? 'Vše' : STATUS_LABEL[s]}
-                    </button>
-                  ))}
+                      <option value="">Všichni klienti</option>
+                      {taskClients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 {filteredTasks.length === 0 ? (
@@ -238,8 +283,11 @@ export default function AppPage() {
                               </span>
                               {overdue && <span className="text-xs text-red-400 font-medium">Po termínu</span>}
                             </div>
-                            <div className="text-xs text-[#8B9099] flex gap-3 mt-1 flex-wrap">
-                              <span className="text-[#C0C6CC]">{t.client.name}</span>
+                            <div className="text-xs text-[#8B9099] flex gap-3 mt-1 flex-wrap items-center">
+                              <span className="inline-flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-sm inline-block" style={{ backgroundColor: t.client.color || '#6B7280' }} />
+                                <span className="text-[#C0C6CC]">{t.client.name}</span>
+                              </span>
                               {t.dueDate && (
                                 <span className={overdue ? 'text-red-400' : ''}>
                                   {new Date(t.dueDate).toLocaleDateString('cs')}
@@ -266,24 +314,63 @@ export default function AppPage() {
 
             {tab === 'hours' && (
               <div>
-                {entries.length === 0 ? (
+                {/* Client filter for hours */}
+                {taskClients.length > 1 && (
+                  <div className="mb-4">
+                    <select
+                      className="input w-auto text-sm"
+                      value={filterClient}
+                      onChange={(e) => setFilterClient(e.target.value)}
+                    >
+                      <option value="">Všichni klienti</option>
+                      {taskClients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {filteredEntries.length === 0 ? (
                   <div className="card p-10 text-center text-[#8B9099] text-sm">Zatím žádné záznamy hodin.</div>
                 ) : (
-                  <div className="card divide-y divide-[#2A2D30]">
-                    {entries.map((e) => (
-                      <div key={e.id} className="flex items-center px-4 py-3 gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-[#F0F2F4]">{e.task.title}</div>
-                          <div className="text-xs text-[#8B9099] mt-0.5">{new Date(e.date).toLocaleDateString('cs')}</div>
-                          {e.notes && <div className="text-xs text-[#8B9099]/60 mt-0.5">{e.notes}</div>}
+                  <div className="space-y-4">
+                    {sortedMonths.map((month) => {
+                      const monthEntries = entriesByMonth[month]
+                      const monthTotal = monthEntries.reduce((s, e) => s + e.hours, 0)
+                      return (
+                        <div key={month}>
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xs font-semibold text-[#8B9099] uppercase tracking-wide">
+                              {monthLabel(month)}
+                            </h3>
+                            <span className="text-xs text-[#A78BFA] font-semibold">{monthTotal.toFixed(1)} hod</span>
+                          </div>
+                          <div className="card divide-y divide-[#2A2D30]">
+                            {monthEntries.map((e) => (
+                              <div key={e.id} className="flex items-center px-4 py-3 gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm text-[#F0F2F4]">{e.task.title}</div>
+                                  <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5 items-center">
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <span className="w-2 h-2 rounded-sm inline-block" style={{ backgroundColor: e.task.client.color || '#6B7280' }} />
+                                      <span>{e.task.client.name}</span>
+                                    </span>
+                                    <span>{new Date(e.date).toLocaleDateString('cs')}</span>
+                                    {e.notes && <span className="text-[#8B9099]/60">{e.notes}</span>}
+                                  </div>
+                                </div>
+                                <div className="font-semibold text-[#A78BFA] text-sm shrink-0">{e.hours} hod</div>
+                                <button className="btn-ghost text-xs text-red-400 hover:text-red-300" onClick={() => delEntry(e.id)}>✕</button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="font-semibold text-[#A78BFA] text-sm shrink-0">{e.hours} hod</div>
-                        <button className="btn-ghost text-xs text-red-400 hover:text-red-300" onClick={() => delEntry(e.id)}>✕</button>
-                      </div>
-                    ))}
-                    <div className="px-4 py-3 flex justify-between text-sm font-semibold bg-[#1E2022]">
+                      )
+                    })}
+
+                    <div className="card px-4 py-3 flex justify-between text-sm font-semibold">
                       <span className="text-[#8B9099]">Celkem</span>
-                      <span className="text-white">{totalHours.toFixed(1)} hod</span>
+                      <span className="text-white">{filteredEntries.reduce((s, e) => s + e.hours, 0).toFixed(1)} hod</span>
                     </div>
                   </div>
                 )}

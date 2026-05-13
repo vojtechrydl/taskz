@@ -4,13 +4,39 @@ import { useEffect, useState } from 'react'
 type Client = {
   id: string
   name: string
+  color: string | null
   email: string | null
   phone: string | null
   notes: string | null
   _count: { tasks: number }
 }
 
-const empty = { name: '', email: '', phone: '', notes: '' }
+const COLORS = [
+  '#7C3AED', '#6366F1', '#3B82F6', '#06B6D4',
+  '#10B981', '#F59E0B', '#F97316', '#F43F5E',
+]
+
+const empty = { name: '', color: COLORS[0], email: '', phone: '', notes: '' }
+
+function ColorPicker({ value, onChange }: { value: string; onChange: (c: string) => void }) {
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {COLORS.map((c) => (
+        <button
+          key={c}
+          type="button"
+          onClick={() => onChange(c)}
+          className="w-6 h-6 rounded-full transition-transform hover:scale-110 ring-offset-[#161819]"
+          style={{
+            backgroundColor: c,
+            outline: value === c ? `2px solid ${c}` : '2px solid transparent',
+            outlineOffset: '2px',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
@@ -29,7 +55,7 @@ export default function ClientsPage() {
 
   const openNew = () => { setForm(empty); setEditing(null); setShowForm(true) }
   const openEdit = (c: Client) => {
-    setForm({ name: c.name, email: c.email || '', phone: c.phone || '', notes: c.notes || '' })
+    setForm({ name: c.name, color: c.color || COLORS[0], email: c.email || '', phone: c.phone || '', notes: c.notes || '' })
     setEditing(c.id)
     setShowForm(true)
   }
@@ -72,6 +98,10 @@ export default function ClientsPage() {
                 <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Název firmy nebo jméno" />
               </div>
               <div>
+                <label className="label">Barva</label>
+                <ColorPicker value={form.color} onChange={(c) => setForm({ ...form, color: c })} />
+              </div>
+              <div>
                 <label className="label">E-mail</label>
                 <input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="kontakt@firma.cz" />
               </div>
@@ -100,6 +130,10 @@ export default function ClientsPage() {
         <div className="card divide-y divide-[#2A2D30]">
           {clients.map((c) => (
             <div key={c.id} className="flex items-center px-5 py-4 gap-4">
+              <div
+                className="w-3 h-3 rounded-sm shrink-0"
+                style={{ backgroundColor: c.color || '#6B7280' }}
+              />
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[#F0F2F4] text-sm">{c.name}</div>
                 <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5">

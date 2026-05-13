@@ -8,6 +8,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     data: {
       name: body.name,
+      color: body.color ?? undefined,
       email: body.email || null,
       phone: body.phone || null,
       notes: body.notes || null,

@@ -9,7 +9,7 @@ type Task = {
   description: string | null
   type: 'ONE_TIME' | 'RECURRING'
   status: 'TODO' | 'IN_PROGRESS' | 'DONE'
-  client: { id: string; name: string }
+  client: { id: string; name: string; color: string | null }
   employee: { id: string; name: string } | null
   estimatedHours: number | null
   dueDate: string | null
@@ -213,7 +213,10 @@ export default function TasksPage() {
                     {overdue && <span className="text-xs text-red-400 font-medium">Po termínu</span>}
                   </div>
                   <div className="text-xs text-[#8B9099] mt-1 flex flex-wrap gap-3">
-                    <span className="text-[#C0C6CC]">{t.client.name}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-sm shrink-0 inline-block" style={{ backgroundColor: t.client.color || '#6B7280' }} />
+                      <span className="text-[#C0C6CC]">{t.client.name}</span>
+                    </span>
                     {t.employee && <span>{t.employee.name}</span>}
                     {t.dueDate && <span className={overdue ? 'text-red-400' : ''}>{new Date(t.dueDate).toLocaleDateString('cs')}</span>}
                     <span>{hours.toFixed(1)} / {t.estimatedHours ?? '?'} hod</span>

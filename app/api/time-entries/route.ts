@@ -12,7 +12,13 @@ export async function GET(req: Request) {
       ...(employeeId ? { employeeId } : {}),
     },
     include: {
-      task: { select: { id: true, title: true } },
+      task: {
+        select: {
+          id: true,
+          title: true,
+          client: { select: { id: true, name: true, color: true } },
+        },
+      },
       employee: { select: { id: true, name: true } },
     },
     orderBy: { date: 'desc' },
@@ -31,7 +37,13 @@ export async function POST(req: Request) {
       notes: body.notes || null,
     },
     include: {
-      task: { select: { id: true, title: true } },
+      task: {
+        select: {
+          id: true,
+          title: true,
+          client: { select: { id: true, name: true, color: true } },
+        },
+      },
       employee: { select: { id: true, name: true } },
     },
   })

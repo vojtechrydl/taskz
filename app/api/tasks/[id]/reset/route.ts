@@ -7,7 +7,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     data: { status: 'TODO', completedAt: null },
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, color: true } },
       employee: { select: { id: true, name: true } },
       timeEntries: { select: { hours: true } },
     },

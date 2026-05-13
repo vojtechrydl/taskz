@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   const client = await prisma.client.create({
     data: {
       name: body.name,
+      color: body.color || null,
       email: body.email || null,
       phone: body.phone || null,
       notes: body.notes || null,

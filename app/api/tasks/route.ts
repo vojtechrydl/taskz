@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       ...(type ? { type } : {}),
     },
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, color: true } },
       employee: { select: { id: true, name: true } },
       timeEntries: { select: { hours: true } },
     },
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       dueDate: body.dueDate ? new Date(body.dueDate) : null,
     },
     include: {
-      client: { select: { id: true, name: true } },
+      client: { select: { id: true, name: true, color: true } },
       employee: { select: { id: true, name: true } },
       timeEntries: { select: { hours: true } },
     },
