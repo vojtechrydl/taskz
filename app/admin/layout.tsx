@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 h-14">
           <div className="flex items-center gap-2.5 mr-2">
             <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
-            <span className="font-semibold text-white text-sm">Marketing Tasks</span>
+            <span className="font-semibold text-white text-sm">TASKZ</span>
           </div>
           <nav className="flex gap-0.5">
             {nav.map((n) => {

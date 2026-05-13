@@ -190,7 +190,7 @@ export default function AppPage() {
         <div className="max-w-4xl mx-auto px-4 flex items-center gap-4 h-14">
           <div className="flex items-center gap-2.5">
             <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
-            <span className="font-semibold text-white text-sm">Marketing Tasks</span>
+            <span className="font-semibold text-white text-sm">TASKZ</span>
           </div>
           <div className="flex-1" />
           <select
