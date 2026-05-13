@@ -15,4 +15,7 @@ RUN npm run build
 ENV NODE_ENV=production
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "npx prisma db push --skip-generate && npm start"]
+COPY start.sh ./
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
