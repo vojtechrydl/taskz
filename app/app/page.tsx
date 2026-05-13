@@ -21,7 +21,8 @@ type TimeEntry = {
   hours: number
   date: string
   notes: string | null
-  task: { id: string; title: string; client: { id: string; name: string; color: string | null } }
+  task: { id: string; title: string; client: { id: string; name: string; color: string | null } } | null
+  client: { id: string; name: string; color: string | null } | null
   employee: { id: string; name: string }
 }
 
@@ -48,9 +49,12 @@ export default function AppPage() {
   const [selectedId, setSelectedId] = useState<string>('')
   const [tasks, setTasks] = useState<Task[]>([])
   const [entries, setEntries] = useState<TimeEntry[]>([])
+  const [allClients, setAllClients] = useState<{ id: string; name: string; color: string | null }[]>([])
   const [loading, setLoading] = useState(false)
   const [logModal, setLogModal] = useState<{ taskId: string; title: string } | null>(null)
   const [logForm, setLogForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10) })
+  const [manualModal, setManualModal] = useState(false)
+  const [manualForm, setManualForm] = useState({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10), clientId: '' })
   const [filterStatus, setFilterStatus] = useState('')
   const [filterClient, setFilterClient] = useState('')
   const [tab, setTab] = useState<'tasks' | 'hours'>('tasks')
@@ -63,6 +67,7 @@ export default function AppPage() {
         const saved = localStorage.getItem('employeeId')
         if (saved && data.find((e) => e.id === saved)) setSelectedId(saved)
       })
+    fetch('/api/clients').then((r) => r.json()).then(setAllClients)
   }, [])
 
   const loadData = useCallback(() => {
@@ -113,6 +118,28 @@ export default function AppPage() {
       }),
     })
     setLogModal(null)
+    loadData()
+  }
+
+  const openManual = () => {
+    setManualForm({ hours: '', notes: '', date: new Date().toISOString().slice(0, 10), clientId: '' })
+    setManualModal(true)
+  }
+
+  const submitManual = async () => {
+    if (!manualForm.hours || !selectedId) return
+    await fetch('/api/time-entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        employeeId: selectedId,
+        hours: manualForm.hours,
+        date: manualForm.date,
+        notes: manualForm.notes,
+        clientId: manualForm.clientId || null,
+      }),
+    })
+    setManualModal(false)
     loadData()
   }
 
@@ -314,9 +341,8 @@ export default function AppPage() {
 
             {tab === 'hours' && (
               <div>
-                {/* Client filter for hours */}
-                {taskClients.length > 1 && (
-                  <div className="mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  {taskClients.length > 1 ? (
                     <select
                       className="input w-auto text-sm"
                       value={filterClient}
@@ -327,8 +353,9 @@ export default function AppPage() {
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
-                  </div>
-                )}
+                  ) : <div />}
+                  <button className="btn-secondary text-sm" onClick={openManual}>+ Přidat hodiny</button>
+                </div>
 
                 {filteredEntries.length === 0 ? (
                   <div className="card p-10 text-center text-[#8B9099] text-sm">Zatím žádné záznamy hodin.</div>
@@ -349,12 +376,16 @@ export default function AppPage() {
                             {monthEntries.map((e) => (
                               <div key={e.id} className="flex items-center px-4 py-3 gap-4">
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm text-[#F0F2F4]">{e.task.title}</div>
-                                  <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5 items-center">
-                                    <span className="inline-flex items-center gap-1.5">
-                                      <span className="w-2 h-2 rounded-sm inline-block" style={{ backgroundColor: e.task.client.color || '#6B7280' }} />
-                                      <span>{e.task.client.name}</span>
-                                    </span>
+                                  <div className="font-medium text-sm text-[#F0F2F4]">
+                                    {e.task ? e.task.title : <span className="text-[#8B9099] italic">Bez úkolu</span>}
+                                  </div>
+                                  <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5 items-center flex-wrap">
+                                    {(() => { const c = e.task?.client ?? e.client; return c ? (
+                                      <span className="inline-flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-sm inline-block" style={{ backgroundColor: c.color || '#6B7280' }} />
+                                        <span>{c.name}</span>
+                                      </span>
+                                    ) : null })()}
                                     <span>{new Date(e.date).toLocaleDateString('cs')}</span>
                                     {e.notes && <span className="text-[#8B9099]/60">{e.notes}</span>}
                                   </div>
@@ -379,6 +410,44 @@ export default function AppPage() {
           </>
         )}
       </main>
+
+      {manualModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="card w-full max-w-sm p-6">
+            <h2 className="text-base font-semibold text-white mb-1">Přidat hodiny ručně</h2>
+            <p className="text-xs text-[#8B9099] mb-4">Zpětný záznam bez vazby na úkol</p>
+            <div className="space-y-3">
+              <div>
+                <label className="label">Počet hodin *</label>
+                <input className="input" type="number" min="0.25" step="0.25" value={manualForm.hours}
+                  onChange={(e) => setManualForm({ ...manualForm, hours: e.target.value })} placeholder="1.5" />
+              </div>
+              <div>
+                <label className="label">Datum</label>
+                <input className="input" type="date" value={manualForm.date}
+                  onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Klient</label>
+                <select className="input" value={manualForm.clientId}
+                  onChange={(e) => setManualForm({ ...manualForm, clientId: e.target.value })}>
+                  <option value="">Bez klienta</option>
+                  {allClients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Poznámka</label>
+                <input className="input" value={manualForm.notes}
+                  onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })} placeholder="Co jsi dělal/a..." />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-5 justify-end">
+              <button className="btn-secondary" onClick={() => setManualModal(false)}>Zrušit</button>
+              <button className="btn-primary" onClick={submitManual}>Uložit</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {logModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">

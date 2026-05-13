@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Client {
-  id        String   @id @default(cuid())
-  name      String
-  color     String?
-  email     String?
-  phone     String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tasks     Task[]
+  id          String      @id @default(cuid())
+  name        String
+  color       String?
+  email       String?
+  phone       String?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  tasks       Task[]
+  timeEntries TimeEntry[]
 }
 
 model Employee {
@@ -58,13 +59,15 @@ model Task {
 }
 
 model TimeEntry {
-  id         String   @id @default(cuid())
-  taskId     String
-  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  taskId     String?
+  task       Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id])
   employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee  @relation(fields: [employeeId], references: [id])
   hours      Float
-  date       DateTime @default(now())
+  date       DateTime  @default(now())
   notes      String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 }
