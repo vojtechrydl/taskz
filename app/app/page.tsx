@@ -341,8 +341,9 @@ export default function AppPage() {
 
             {tab === 'hours' && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  {taskClients.length > 1 ? (
+                <div className="flex items-center gap-2 mb-4">
+                  <button className="btn-primary text-sm" onClick={openManual}>+ Přidat hodiny</button>
+                  {taskClients.length > 1 && (
                     <select
                       className="input w-auto text-sm"
                       value={filterClient}
@@ -353,8 +354,7 @@ export default function AppPage() {
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
-                  ) : <div />}
-                  <button className="btn-secondary text-sm" onClick={openManual}>+ Přidat hodiny</button>
+                  )}
                 </div>
 
                 {filteredEntries.length === 0 ? (
