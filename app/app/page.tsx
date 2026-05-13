@@ -8,7 +8,7 @@ type Task = {
   title: string
   description: string | null
   type: 'ONE_TIME' | 'RECURRING'
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE'
+  status: 'TODO' | 'ASSIGNED' | 'IN_PROGRESS' | 'DONE'
   client: { id: string; name: string; color: string | null }
   employee: { id: string; name: string } | null
   estimatedHours: number | null
@@ -27,11 +27,12 @@ type TimeEntry = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  TODO: 'bg-[#2A2D30] text-[#8B9099]',
+  TODO:        'bg-[#2A2D30] text-[#8B9099]',
+  ASSIGNED:    'bg-sky-500/15 text-sky-400',
   IN_PROGRESS: 'bg-amber-500/15 text-amber-400',
-  DONE: 'bg-emerald-500/15 text-emerald-400',
+  DONE:        'bg-emerald-500/15 text-emerald-400',
 }
-const STATUS_LABEL: Record<string, string> = { TODO: 'Čeká', IN_PROGRESS: 'Probíhá', DONE: 'Splněno' }
+const STATUS_LABEL: Record<string, string> = { TODO: 'Čeká', ASSIGNED: 'Zadáno', IN_PROGRESS: 'Probíhá', DONE: 'Splněno' }
 
 const MONTH_NAMES = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']
 

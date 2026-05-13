@@ -36,6 +36,7 @@ enum TaskType {
 
 enum TaskStatus {
   TODO
+  ASSIGNED
   IN_PROGRESS
   DONE
 }
