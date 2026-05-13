@@ -319,23 +319,23 @@ function TasksPageInner() {
             <div className="space-y-3">
               <div>
                 <label className="label">Název *</label>
-                <input className="input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Název úkolu" />
+                <input className="input" value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Název úkolu" />
               </div>
               <div>
                 <label className="label">Popis</label>
-                <textarea className="input resize-none" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <textarea className="input resize-none" rows={2} value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label">Klient *</label>
-                  <select className="input" value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })}>
+                  <select className="input" value={form.clientId} onChange={(e) => setForm(p => ({ ...p, clientId: e.target.value }))}>
                     <option value="">Vyberte klienta</option>
                     {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="label">Zaměstnanec</label>
-                  <select className="input" value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })}>
+                  <select className="input" value={form.employeeId} onChange={(e) => setForm(p => ({ ...p, employeeId: e.target.value }))}>
                     <option value="">Nepřiřazeno</option>
                     {employees.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
                   </select>
@@ -344,19 +344,19 @@ function TasksPageInner() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label">Typ</label>
-                  <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as 'ONE_TIME' | 'RECURRING' })}>
+                  <select className="input" value={form.type} onChange={(e) => setForm(p => ({ ...p, type: e.target.value as 'ONE_TIME' | 'RECURRING' }))}>
                     <option value="ONE_TIME">Jednorázový</option>
                     <option value="RECURRING">Pravidelný</option>
                   </select>
                 </div>
                 <div>
                   <label className="label">Termín</label>
-                  <input className="input" type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
+                  <input className="input" type="date" value={form.dueDate} onChange={(e) => setForm(p => ({ ...p, dueDate: e.target.value }))} />
                 </div>
               </div>
               <div>
                 <label className="label">Odhadovaný čas (hod)</label>
-                <input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={(e) => setForm({ ...form, estimatedHours: e.target.value })} placeholder="0" />
+                <input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={(e) => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" />
               </div>
             </div>
             <div className="flex gap-2 mt-5 justify-end">
