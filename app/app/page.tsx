@@ -160,7 +160,7 @@ export default function AppPage() {
 
   // Group entries by month, optionally filtered by client
   const filteredEntries = filterClient
-    ? entries.filter(e => e.task.client.id === filterClient)
+    ? entries.filter(e => (e.task?.client?.id ?? e.client?.id) === filterClient)
     : entries
 
   const entriesByMonth = filteredEntries.reduce<Record<string, TimeEntry[]>>((acc, e) => {
