@@ -83,17 +83,17 @@ export default function EmployeesPage() {
       ) : (
         <div className="card divide-y divide-[#2A2D30]">
           {employees.map((e) => (
-            <div key={e.id} className="flex items-center px-5 py-4 gap-4">
+            <div key={e.id} className="flex items-center px-4 py-4 gap-3">
               <div className="w-8 h-8 rounded-full bg-[#7C3AED1A] border border-[#7C3AED]/30 text-[#A78BFA] font-semibold flex items-center justify-center text-sm shrink-0">
                 {e.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[#F0F2F4] text-sm">{e.name}</div>
-                {e.email && <div className="text-xs text-[#8B9099] mt-0.5">{e.email}</div>}
+                {e.email && <div className="text-xs text-[#8B9099] mt-0.5 truncate">{e.email}</div>}
               </div>
-              <div className="flex gap-2">
-                <button className="btn-secondary" onClick={() => openEdit(e)}>Upravit</button>
-                <button className="btn-danger" onClick={() => del(e.id, e.name)}>Smazat</button>
+              <div className="flex gap-2 shrink-0">
+                <button className="btn-secondary text-xs" onClick={() => openEdit(e)}>Upravit</button>
+                <button className="btn-danger text-xs" onClick={() => del(e.id, e.name)}>Smazat</button>
               </div>
             </div>
           ))}

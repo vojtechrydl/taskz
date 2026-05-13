@@ -217,14 +217,14 @@ export default function AppPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-[#161819] border-b border-[#2A2D30] sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 h-14">
-          <div className="flex items-center gap-2.5">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3 h-14">
+          <div className="flex items-center gap-2 shrink-0">
             <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
             <span className="font-semibold text-white text-sm">TASKZ</span>
           </div>
           <div className="flex-1" />
           <select
-            className="input w-auto text-sm"
+            className="input w-auto text-sm max-w-[140px]"
             value={selectedId}
             onChange={(e) => selectEmployee(e.target.value)}
           >
@@ -233,7 +233,7 @@ export default function AppPage() {
               <option key={e.id} value={e.id}>{e.name}</option>
             ))}
           </select>
-          <Link href="/admin" className="text-sm text-[#8B9099] hover:text-[#F0F2F4] transition-colors">
+          <Link href="/admin" className="text-sm text-[#8B9099] hover:text-[#F0F2F4] transition-colors shrink-0">
             Admin →
           </Link>
         </div>

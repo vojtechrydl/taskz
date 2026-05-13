@@ -130,24 +130,24 @@ export default function ClientsPage() {
       ) : (
         <div className="card divide-y divide-[#2A2D30]">
           {clients.map((c) => (
-            <div key={c.id} className="flex items-center px-5 py-4 gap-4">
+            <div key={c.id} className="flex items-start px-4 py-4 gap-3">
               <div
-                className="w-3 h-3 rounded-sm shrink-0"
+                className="w-3 h-3 rounded-sm shrink-0 mt-1"
                 style={{ backgroundColor: c.color || '#6B7280' }}
               />
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[#F0F2F4] text-sm">{c.name}</div>
-                <div className="text-xs text-[#8B9099] flex gap-3 mt-0.5">
-                  {c.email && <span>{c.email}</span>}
+                <div className="text-xs text-[#8B9099] flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                  {c.email && <span className="truncate max-w-[180px]">{c.email}</span>}
                   {c.phone && <span>{c.phone}</span>}
                   <span>{c._count.tasks} úkolů</span>
                 </div>
                 {c.notes && <div className="text-xs text-[#8B9099]/60 mt-0.5 truncate">{c.notes}</div>}
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Link href={`/admin/tasks?newFor=${c.id}`} className="btn btn-secondary text-sm">+ Úkol</Link>
-                <button className="btn-secondary" onClick={() => openEdit(c)}>Upravit</button>
-                <button className="btn-danger" onClick={() => del(c.id, c.name)}>Smazat</button>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Link href={`/admin/tasks?newFor=${c.id}`} className="btn btn-secondary text-xs">+ Úkol</Link>
+                  <button className="btn-secondary text-xs" onClick={() => openEdit(c)}>Upravit</button>
+                  <button className="btn-danger text-xs" onClick={() => del(c.id, c.name)}>Smazat</button>
+                </div>
               </div>
             </div>
           ))}
