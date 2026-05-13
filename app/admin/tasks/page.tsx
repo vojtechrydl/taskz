@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 type Client = { id: string; name: string }
 type Employee = { id: string; name: string }
@@ -35,12 +36,14 @@ const STATUS_DOT: Record<string, string> = {
 }
 
 export default function TasksPage() {
+  const searchParams = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
   const [form, setForm] = useState(emptyForm)
   const [editing, setEditing] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const handledNewFor = useRef(false)
   const [loading, setLoading] = useState(true)
   const [filterClient, setFilterClient] = useState('')
   const [filterEmployee, setFilterEmployee] = useState('')
@@ -64,6 +67,16 @@ export default function TasksPage() {
   }
 
   useEffect(() => { load() }, [filterClient, filterEmployee, filterStatus, filterType])
+
+  useEffect(() => {
+    const newFor = searchParams.get('newFor')
+    if (newFor && !handledNewFor.current && clients.length > 0) {
+      handledNewFor.current = true
+      setForm({ ...emptyForm, clientId: newFor })
+      setEditing(null)
+      setShowForm(true)
+    }
+  }, [searchParams, clients])
 
   const openNew = () => { setForm(emptyForm); setEditing(null); setShowForm(true) }
   const openEdit = (t: Task) => {

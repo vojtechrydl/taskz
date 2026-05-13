@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 type Client = {
   id: string
@@ -144,6 +145,7 @@ export default function ClientsPage() {
                 {c.notes && <div className="text-xs text-[#8B9099]/60 mt-0.5 truncate">{c.notes}</div>}
               </div>
               <div className="flex gap-2 shrink-0">
+                <Link href={`/admin/tasks?newFor=${c.id}`} className="btn btn-secondary text-sm">+ Úkol</Link>
                 <button className="btn-secondary" onClick={() => openEdit(c)}>Upravit</button>
                 <button className="btn-danger" onClick={() => del(c.id, c.name)}>Smazat</button>
               </div>
