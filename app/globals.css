@@ -213,3 +213,22 @@ select.input { cursor: pointer; }
 
 /* Nav divider */
 .nav-divider { width: 1px; height: 22px; background: var(--glass-border); margin: 0 4px; }
+
+/* Dashboard responsive grid */
+.dash-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.dash-hero { grid-column: span 7; }
+.dash-hero-h2 { font-size: 34px; }
+.dash-c1   { grid-column: span 3; }
+.dash-c2   { grid-column: span 2; }
+.dash-c3   { grid-column: span 5; }
+.dash-team { grid-column: span 5; }
+.dash-clients { grid-column: span 7; }
+
+@media (max-width: 767px) {
+  .dash-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dash-hero, .dash-c3, .dash-team, .dash-clients { grid-column: span 2; }
+  .dash-c1, .dash-c2 { grid-column: span 1; }
+  .dash-hero-h2 { font-size: 20px !important; }
+  .page-h1 { font-size: 28px !important; }
+  .kanban { grid-template-columns: 1fr !important; }
+}

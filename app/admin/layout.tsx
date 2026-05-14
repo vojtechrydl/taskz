@@ -18,10 +18,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ minHeight: '100vh' }}>
       {/* Floating nav */}
-      <div style={{ position: 'fixed', top: 18, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div className="topnav" style={{ pointerEvents: 'auto' }}>
+      <div style={{ position: 'fixed', top: 18, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none', padding: '0 12px' }}>
+        <div className="topnav" style={{ pointerEvents: 'auto', maxWidth: '100%' }}>
           {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px 8px 8px', marginRight: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 12px 8px 8px' }}>
             <div className="mark">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M2 3.5h10M7 3.5V11" stroke="white" strokeWidth="2" strokeLinecap="round"/>
@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="nav-divider" />
 
-          {/* Desktop nav */}
-          <nav style={{ display: 'flex', gap: 2 }} className="hidden md:flex">
+          {/* Desktop nav — no inline display so hidden class works */}
+          <nav className="hidden md:flex" style={{ gap: 2 }}>
             {nav.map(n => {
               const active = n.href === '/admin' ? path === '/admin' : path.startsWith(n.href)
               return (
@@ -42,25 +42,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
           </nav>
 
-          {/* Mobile: current */}
-          <span className="md:hidden nav-pill is-active">{current?.label}</span>
+          {/* Mobile: current page pill */}
+          <span className="md:hidden nav-pill is-active" style={{ fontSize: 13 }}>{current?.label}</span>
 
           <div className="nav-divider" />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingRight: 4 }}>
             <Link href="/app" className="nav-pill hidden md:block" style={{ color: 'var(--ink-3)' }}>Pohled zaměstnance</Link>
-            {/* Mobile hamburger */}
-            <button className="md:hidden nav-pill" onClick={() => setOpen(o => !o)} style={{ padding: '9px 12px' }}>
-              ☰
-            </button>
+            <button className="md:hidden nav-pill" onClick={() => setOpen(o => !o)} style={{ padding: '9px 12px', fontSize: 16 }}>☰</button>
           </div>
         </div>
       </div>
 
       {/* Mobile dropdown */}
       {open && (
-        <div style={{ position: 'fixed', top: 72, left: 0, right: 0, zIndex: 49, display: 'flex', justifyContent: 'center' }} className="md:hidden">
-          <div className="glass" style={{ padding: 8, minWidth: 200, borderRadius: 18 }}>
+        <div className="md:hidden" style={{ position: 'fixed', top: 72, left: 12, right: 12, zIndex: 49 }}>
+          <div className="glass" style={{ padding: 8, borderRadius: 18 }}>
             {nav.map(n => {
               const active = n.href === '/admin' ? path === '/admin' : path.startsWith(n.href)
               return (
@@ -74,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
 
-      <main style={{ paddingTop: 88, paddingBottom: 64, paddingLeft: 24, paddingRight: 24, maxWidth: 1280, width: '100%', margin: '0 auto' }}>
+      <main style={{ paddingTop: 88, paddingBottom: 64, paddingLeft: 16, paddingRight: 16, maxWidth: 1280, width: '100%', margin: '0 auto' }}>
         {children}
       </main>
     </div>

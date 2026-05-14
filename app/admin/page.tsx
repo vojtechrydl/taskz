@@ -97,11 +97,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Dashboard grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 16 }}>
+      <div className="dash-grid">
         {/* Hero */}
-        <div className="glass-strong" style={{ gridColumn: 'span 7', padding: 32, display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, oklch(96% 0.04 290 / 0.85), oklch(94% 0.06 220 / 0.6))' }}>
+        <div className="glass-strong dash-hero tile-hero" style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, oklch(96% 0.04 290 / 0.85), oklch(94% 0.06 220 / 0.6))' }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)' }}>Studio · {dateStr}</span>
-          <h2 style={{ fontSize: 36, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.05, margin: '8px 0 0', color: 'var(--ink-1)' }}>
+          <h2 className="dash-hero-h2" style={{ fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.05, margin: '8px 0 0', color: 'var(--ink-1)' }}>
             Tento týden je <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>{activeTasks} úkolů</em> v běhu napříč {clients.length} klienty.
           </h2>
           <div style={{ marginTop: 20, display: 'flex', gap: 24, alignItems: 'flex-end' }}>
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Klienti */}
-        <div className="glass" style={{ gridColumn: 'span 3', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="glass dash-c1" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'oklch(70% 0.18 280)', display: 'inline-block' }} />Klienti
           </span>
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tým */}
-        <div className="glass" style={{ gridColumn: 'span 2', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="glass dash-c2" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'oklch(72% 0.14 230)', display: 'inline-block' }} />Tým
           </span>
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Hodiny týden */}
-        <div className="glass" style={{ gridColumn: 'span 5', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="glass dash-c3" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-3)' }}>Hodiny tento týden</span>
           <div style={{ display: 'flex', gap: 16, alignItems: 'baseline' }}>
             <div style={{ fontSize: 52, fontWeight: 600, letterSpacing: '-0.045em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{weekHours.toFixed(0)}</div>
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Vytížení týmu */}
-        <div className="glass" style={{ gridColumn: 'span 5', padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="glass dash-team" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-3)' }}>Vytížení týmu</span>
             <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>tento týden</span>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Klienti podle hodin */}
-        <div className="glass" style={{ gridColumn: 'span 7', padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="glass dash-clients" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-3)' }}>Klienti podle hodin</span>
             <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>tento měsíc</span>
