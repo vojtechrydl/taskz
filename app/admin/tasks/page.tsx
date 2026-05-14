@@ -173,7 +173,7 @@ function TasksPageInner() {
           </div>
 
           {/* Mobile grouped list */}
-          <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="md:hidden" style={{ flexDirection: 'column', gap: 20 }}>
             {COLS.map(col => {
               const colTasks = filtered.filter(t => t.status === col.id)
               if (!colTasks.length) return null

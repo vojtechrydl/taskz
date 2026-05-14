@@ -310,7 +310,7 @@ export default function AppPage() {
                 </div>
 
                 {/* Mobile grouped */}
-                <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="md:hidden" style={{ flexDirection: 'column', gap: 20 }}>
                   {COLS.map(col => {
                     const colTasks = filteredTasks.filter(t => t.status === col.id)
                     if (!colTasks.length) return null
