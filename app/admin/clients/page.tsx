@@ -2,38 +2,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-type Client = {
-  id: string
-  name: string
-  color: string | null
-  email: string | null
-  phone: string | null
-  notes: string | null
-  _count: { tasks: number }
-}
+type Client = { id: string; name: string; color: string | null; email: string | null; phone: string | null; notes: string | null; _count: { tasks: number } }
 
-const COLORS = [
-  '#7C3AED', '#6366F1', '#3B82F6', '#06B6D4',
-  '#10B981', '#F59E0B', '#F97316', '#F43F5E',
-]
-
+const COLORS = ['#7C3AED','#6366F1','#3B82F6','#06B6D4','#10B981','#F59E0B','#F97316','#F43F5E']
 const empty = { name: '', color: COLORS[0], email: '', phone: '', notes: '' }
+
+function hueForId(id: string) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360; return h }
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (c: string) => void }) {
   return (
-    <div className="flex gap-2 flex-wrap">
-      {COLORS.map((c) => (
-        <button
-          key={c}
-          type="button"
-          onClick={() => onChange(c)}
-          className="w-6 h-6 rounded-full transition-transform hover:scale-110 ring-offset-[#161819]"
-          style={{
-            backgroundColor: c,
-            outline: value === c ? `2px solid ${c}` : '2px solid transparent',
-            outlineOffset: '2px',
-          }}
-        />
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {COLORS.map(c => (
+        <button key={c} type="button" onClick={() => onChange(c)}
+          style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: 'none', cursor: 'pointer', outline: value === c ? `2px solid ${c}` : '2px solid transparent', outlineOffset: 2, transition: 'transform 0.15s' }}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15)')}
+          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} />
       ))}
     </div>
   )
@@ -46,19 +29,13 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  const load = () =>
-    fetch('/api/clients')
-      .then((r) => r.json())
-      .then(setClients)
-      .finally(() => setLoading(false))
-
+  const load = () => fetch('/api/clients').then(r => r.json()).then(setClients).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
 
   const openNew = () => { setForm(empty); setEditing(null); setShowForm(true) }
   const openEdit = (c: Client) => {
     setForm({ name: c.name, color: c.color || COLORS[0], email: c.email || '', phone: c.phone || '', notes: c.notes || '' })
-    setEditing(c.id)
-    setShowForm(true)
+    setEditing(c.id); setShowForm(true)
   }
   const cancel = () => { setShowForm(false); setEditing(null); setForm(empty) }
 
@@ -67,90 +44,76 @@ export default function ClientsPage() {
     const url = editing ? `/api/clients/${editing}` : '/api/clients'
     const method = editing ? 'PATCH' : 'POST'
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    cancel()
-    load()
+    cancel(); load()
   }
 
   const del = async (id: string, name: string) => {
-    if (!confirm(`Smazat klienta „${name}"? Smažou se i všechny jeho úkoly.`)) return
-    await fetch(`/api/clients/${id}`, { method: 'DELETE' })
-    load()
+    if (!confirm(`Smazat klienta „${name}"?`)) return
+    await fetch(`/api/clients/${id}`, { method: 'DELETE' }); load()
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="fade-up">
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
         <div>
-          <h1 className="text-xl font-semibold text-white mb-1">Klienti</h1>
-          <p className="text-sm text-[#8B9099]">Správa klientů</p>
+          <h1 style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Klienti</h1>
+          <div style={{ fontSize: 15, color: 'var(--ink-3)' }}>Správa klientů · {clients.length} aktivních</div>
         </div>
-        <button className="btn-primary" onClick={openNew}>+ Nový klient</button>
+        <button className="btn btn-accent" onClick={openNew}>+ Nový klient</button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="card w-full max-w-md p-6">
-            <h2 className="text-base font-semibold text-white mb-4">
-              {editing ? 'Upravit klienta' : 'Nový klient'}
-            </h2>
-            <div className="space-y-3">
-              <div>
-                <label className="label">Název *</label>
-                <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Název firmy nebo jméno" />
+      {loading ? <p style={{ color: 'var(--ink-3)' }}>Načítám...</p> : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {clients.map(c => {
+            const bg = c.color || `oklch(70% 0.18 ${hueForId(c.id)})`
+            return (
+              <div key={c.id} className="glass client-card" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14, transition: 'all 0.22s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="client-swatch" style={{ width: 44, height: 44, background: bg, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.015em' }}>{c.name}</div>
+                    {c.email && <div style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 20, paddingTop: 14, borderTop: '1px solid var(--glass-border)' }}>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>{c._count.tasks}</div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>úkolů</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 6, marginTop: 'auto', flexWrap: 'wrap' }}>
+                  <Link href={`/admin/tasks?newFor=${c.id}`} className="btn btn-glass btn-sm">+ Úkol</Link>
+                  <button className="btn btn-ghost btn-sm" onClick={() => openEdit(c)}>Upravit</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => del(c.id, c.name)}>Smazat</button>
+                </div>
               </div>
-              <div>
-                <label className="label">Barva</label>
-                <ColorPicker value={form.color} onChange={(c) => setForm({ ...form, color: c })} />
-              </div>
-              <div>
-                <label className="label">E-mail</label>
-                <input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="kontakt@firma.cz" />
-              </div>
-              <div>
-                <label className="label">Telefon</label>
-                <input className="input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+420 ..." />
-              </div>
-              <div>
-                <label className="label">Poznámky</label>
-                <textarea className="input resize-none" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-5 justify-end">
-              <button className="btn-secondary" onClick={cancel}>Zrušit</button>
-              <button className="btn-primary" onClick={save}>Uložit</button>
-            </div>
-          </div>
+            )
+          })}
         </div>
       )}
 
-      {loading ? (
-        <p className="text-[#8B9099] text-sm">Načítám...</p>
-      ) : clients.length === 0 ? (
-        <div className="card p-12 text-center text-[#8B9099] text-sm">Zatím žádní klienti. Přidejte prvního.</div>
-      ) : (
-        <div className="card divide-y divide-[#2A2D30]">
-          {clients.map((c) => (
-            <div key={c.id} className="flex items-start px-4 py-4 gap-3">
-              <div
-                className="w-3 h-3 rounded-sm shrink-0 mt-1"
-                style={{ backgroundColor: c.color || '#6B7280' }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-[#F0F2F4] text-sm">{c.name}</div>
-                <div className="text-xs text-[#8B9099] flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
-                  {c.email && <span className="truncate max-w-[180px]">{c.email}</span>}
-                  {c.phone && <span>{c.phone}</span>}
-                  <span>{c._count.tasks} úkolů</span>
-                </div>
-                {c.notes && <div className="text-xs text-[#8B9099]/60 mt-0.5 truncate">{c.notes}</div>}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Link href={`/admin/tasks?newFor=${c.id}`} className="btn btn-secondary text-xs">+ Úkol</Link>
-                  <button className="btn-secondary text-xs" onClick={() => openEdit(c)}>Upravit</button>
-                  <button className="btn-danger text-xs" onClick={() => del(c.id, c.name)}>Smazat</button>
-                </div>
-              </div>
+      {showForm && (
+        <div className="modal-overlay" onClick={cancel}>
+          <div className="glass-strong modal-box" onClick={e => e.stopPropagation()} style={{ padding: 32 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 24px', color: 'var(--ink-1)' }}>
+              {editing ? 'Upravit klienta' : 'Nový klient'}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div><label className="label">Název *</label><input className="input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Název firmy" /></div>
+              <div><label className="label">Barva</label><ColorPicker value={form.color} onChange={c => setForm(p => ({ ...p, color: c }))} /></div>
+              <div><label className="label">E-mail</label><input className="input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="kontakt@firma.cz" /></div>
+              <div><label className="label">Telefon</label><input className="input" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="+420 ..." /></div>
+              <div><label className="label">Poznámky</label><textarea className="input" rows={3} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} /></div>
             </div>
-          ))}
+            <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={cancel}>Zrušit</button>
+              <button className="btn btn-accent" onClick={save}>Uložit</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

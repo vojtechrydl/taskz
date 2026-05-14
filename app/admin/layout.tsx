@@ -4,89 +4,79 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const nav = [
-  { href: '/admin', label: 'Přehled' },
-  { href: '/admin/clients', label: 'Klienti' },
+  { href: '/admin',           label: 'Přehled' },
+  { href: '/admin/clients',   label: 'Klienti' },
   { href: '/admin/employees', label: 'Zaměstnanci' },
-  { href: '/admin/tasks', label: 'Úkoly' },
+  { href: '/admin/tasks',     label: 'Úkoly' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [open, setOpen] = useState(false)
   const current = nav.find(n => n.href === '/admin' ? path === '/admin' : path.startsWith(n.href))
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-[#161819] border-b border-[#2A2D30] sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3 h-14">
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
-            <span className="font-semibold text-white text-sm">TASKZ</span>
+    <div style={{ minHeight: '100vh' }}>
+      {/* Floating nav */}
+      <div style={{ position: 'fixed', top: 18, left: 0, right: 0, zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div className="topnav" style={{ pointerEvents: 'auto' }}>
+          {/* Brand */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px 8px 8px', marginRight: 4 }}>
+            <div className="mark">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 3.5h10M7 3.5V11" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span style={{ fontWeight: 600, letterSpacing: '0.04em', fontSize: 13, color: 'var(--ink-1)' }}>TASKZ</span>
           </div>
 
+          <div className="nav-divider" />
+
           {/* Desktop nav */}
-          <nav className="hidden md:flex gap-0.5 ml-2">
-            {nav.map((n) => {
+          <nav style={{ display: 'flex', gap: 2 }} className="hidden md:flex">
+            {nav.map(n => {
               const active = n.href === '/admin' ? path === '/admin' : path.startsWith(n.href)
               return (
-                <Link key={n.href} href={n.href}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    active ? 'bg-[#7C3AED1A] text-[#A78BFA]' : 'text-[#8B9099] hover:bg-[#1E2022] hover:text-[#F0F2F4]'
-                  }`}
-                >
-                  {n.label}
-                </Link>
+                <Link key={n.href} href={n.href} className={`nav-pill${active ? ' is-active' : ''}`}>{n.label}</Link>
               )
             })}
           </nav>
 
-          {/* Mobile: current page label */}
-          <span className="md:hidden text-sm text-[#A78BFA] font-medium ml-1">{current?.label}</span>
+          {/* Mobile: current */}
+          <span className="md:hidden nav-pill is-active">{current?.label}</span>
 
-          <div className="ml-auto flex items-center gap-2">
-            <Link href="/app" className="hidden md:block text-sm text-[#8B9099] hover:text-[#F0F2F4] transition-colors">
-              Pohled zaměstnance →
-            </Link>
+          <div className="nav-divider" />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingRight: 4 }}>
+            <Link href="/app" className="nav-pill hidden md:block" style={{ color: 'var(--ink-3)' }}>Pohled zaměstnance</Link>
             {/* Mobile hamburger */}
-            <button
-              className="md:hidden btn-ghost p-1.5"
-              onClick={() => setMenuOpen(o => !o)}
-              aria-label="Menu"
-            >
-              <div className="flex flex-col gap-1.5 w-5">
-                <span className={`block h-0.5 bg-[#8B9099] transition-all ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-                <span className={`block h-0.5 bg-[#8B9099] transition-all ${menuOpen ? 'opacity-0' : ''}`} />
-                <span className={`block h-0.5 bg-[#8B9099] transition-all ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-              </div>
+            <button className="md:hidden nav-pill" onClick={() => setOpen(o => !o)} style={{ padding: '9px 12px' }}>
+              ☰
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile dropdown menu */}
-        {menuOpen && (
-          <div className="md:hidden border-t border-[#2A2D30] bg-[#161819] px-4 py-2">
-            {nav.map((n) => {
+      {/* Mobile dropdown */}
+      {open && (
+        <div style={{ position: 'fixed', top: 72, left: 0, right: 0, zIndex: 49, display: 'flex', justifyContent: 'center' }} className="md:hidden">
+          <div className="glass" style={{ padding: 8, minWidth: 200, borderRadius: 18 }}>
+            {nav.map(n => {
               const active = n.href === '/admin' ? path === '/admin' : path.startsWith(n.href)
               return (
-                <Link key={n.href} href={n.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={`flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                    active ? 'text-[#A78BFA] bg-[#7C3AED1A]' : 'text-[#8B9099] hover:text-[#F0F2F4]'
-                  }`}
-                >
-                  {n.label}
-                </Link>
+                <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
+                  className={`nav-pill${active ? ' is-active' : ''}`}
+                  style={{ display: 'block', marginBottom: 2 }}>{n.label}</Link>
               )
             })}
-            <Link href="/app" onClick={() => setMenuOpen(false)}
-              className="flex items-center px-3 py-2.5 text-sm text-[#8B9099] hover:text-[#F0F2F4]">
-              Pohled zaměstnance →
-            </Link>
+            <Link href="/app" onClick={() => setOpen(false)} className="nav-pill" style={{ display: 'block', color: 'var(--ink-3)' }}>Pohled zaměstnance</Link>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 overflow-x-hidden">{children}</main>
+      <main style={{ paddingTop: 88, paddingBottom: 64, paddingLeft: 24, paddingRight: 24, maxWidth: 1280, width: '100%', margin: '0 auto' }}>
+        {children}
+      </main>
     </div>
   )
 }
