@@ -75,6 +75,8 @@ html, body {
   border-radius: 18px;
 }
 .glass-card {
+  overflow: hidden;
+  min-width: 0;
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

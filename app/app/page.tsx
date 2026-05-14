@@ -251,7 +251,7 @@ export default function AppPage() {
             {tab === 'tasks' && (
               <>
                 {/* Desktop kanban */}
-                <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, alignItems: 'start' }}>
+                <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14, alignItems: 'start' }}>
                   {COLS.map(col => {
                     const colTasks = filteredTasks.filter(t => t.status === col.id)
                     const isOver = dragOver === col.id
