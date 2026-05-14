@@ -14,7 +14,7 @@ type Task = {
   timeEntries: { hours: number }[]
 }
 
-const emptyForm = { title: '', description: '', type: 'ONE_TIME' as const, clientId: '', employeeId: '', estimatedHours: '', dueDate: '' }
+const emptyForm = { title: '', description: '', type: 'ONE_TIME' as 'ONE_TIME' | 'RECURRING', clientId: '', employeeId: '', estimatedHours: '', dueDate: '' }
 
 const COLS = [
   { id: 'TODO',        label: 'Čeká',    colClass: 'kcol--wait',  dotClass: 'status-dot--wait' },
