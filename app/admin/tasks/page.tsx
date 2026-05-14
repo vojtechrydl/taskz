@@ -54,6 +54,7 @@ function TasksPageInner() {
   const [filterEmployee, setFilterEmployee] = useState('')
   const [dragOver, setDragOver] = useState<string | null>(null)
   const [dueDate, setDueDate] = useState('')
+  const [hasDueDate, setHasDueDate] = useState(false)
   const dateRef = useRef<HTMLInputElement>(null)
   const handledNewFor = useRef(false)
 
@@ -82,22 +83,20 @@ function TasksPageInner() {
   }, [searchParams, clients])
 
   const openNew = () => {
-    setForm(emptyForm); setDueDate(''); setEditing(null); setShowForm(true)
-    setTimeout(() => { if (dateRef.current) dateRef.current.value = '' }, 0)
+    setForm(emptyForm); setDueDate(''); setHasDueDate(false); setEditing(null); setShowForm(true)
   }
   const openEdit = (t: Task) => {
     const date = t.dueDate ? t.dueDate.slice(0, 10) : ''
     setForm({ title: t.title, description: t.description || '', type: t.type, clientId: t.client.id, employeeId: t.employee?.id || '', estimatedHours: t.estimatedHours?.toString() || '', dueDate: '' })
-    setDueDate(date); setEditing(t.id); setShowForm(true)
-    setTimeout(() => { if (dateRef.current) dateRef.current.value = date }, 0)
+    setDueDate(date); setHasDueDate(!!date); setEditing(t.id); setShowForm(true)
   }
-  const cancel = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setDueDate('') }
+  const cancel = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setDueDate(''); setHasDueDate(false) }
 
   const save = async () => {
     if (!form.title.trim() || !form.clientId) return
     const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
     const method = editing ? 'PATCH' : 'POST'
-    const finalDueDate = dateRef.current?.value || null
+    const finalDueDate = hasDueDate ? (dateRef.current?.value || null) : null
     const payload = { ...form, dueDate: finalDueDate, estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null }
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     cancel(); load()
@@ -228,15 +227,20 @@ function TasksPageInner() {
                     <option value="ONE_TIME">Jednorázový</option>
                     <option value="RECURRING">Pravidelný</option>
                   </select></div>
-                <div><label className="label">Termín</label>
-                  <input
-                    ref={dateRef}
-                    className="input"
-                    type="date"
-                    value={dueDate}
-                    onChange={e => setDueDate(e.target.value)}
-                    onBlur={e => setDueDate(e.target.value)}
-                  />
+                <div>
+                  <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="checkbox" checked={hasDueDate} onChange={e => setHasDueDate(e.target.checked)} style={{ width: 14, height: 14 }} />
+                    Termín
+                  </label>
+                  {hasDueDate && (
+                    <input
+                      ref={dateRef}
+                      className="input"
+                      type="date"
+                      key={editing ?? 'new'}
+                      defaultValue={dueDate || new Date().toISOString().slice(0, 10)}
+                    />
+                  )}
                 </div>
               </div>
               <div><label className="label">Odhadovaný čas (hod)</label><input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={e => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" /></div>
