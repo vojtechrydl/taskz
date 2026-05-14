@@ -241,7 +241,9 @@ function TasksPageInner() {
                     <option value="RECURRING">Pravidelný</option>
                   </select></div>
                 <div><label className="label">Termín</label>
-                  <input ref={dateRef} className="input" type="date" /></div>
+                  <input ref={dateRef} className="input" type="date" />
+                  <div style={{ fontSize: 11, color: 'red', marginTop: 4 }}>state: "{dueDate}" | ref: "{dateRef.current?.value}"</div>
+                </div>
               </div>
               <div><label className="label">Odhadovaný čas (hod)</label><input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={e => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" /></div>
             </div>
