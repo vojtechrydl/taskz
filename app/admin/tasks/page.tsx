@@ -222,7 +222,7 @@ function TasksPageInner() {
                     <option value="RECURRING">Pravidelný</option>
                   </select></div>
                 <div><label className="label">Termín</label>
-                  <input className="input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
+                  <input className="input" type="date" value={dueDate || undefined} onChange={e => setDueDate(e.target.value)} onInput={e => setDueDate((e.target as HTMLInputElement).value)} /></div>
               </div>
               <div><label className="label">Odhadovaný čas (hod)</label><input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={e => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" /></div>
             </div>
