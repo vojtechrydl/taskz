@@ -57,18 +57,6 @@ function TasksPageInner() {
   const dateRef = useRef<HTMLInputElement>(null)
   const handledNewFor = useRef(false)
 
-  // Native DOM listener — bypasses React synthetic events for Safari date picker
-  useEffect(() => {
-    const input = dateRef.current
-    if (!input) return
-    const handler = () => setDueDate(input.value)
-    input.addEventListener('change', handler)
-    input.addEventListener('input', handler)
-    return () => {
-      input.removeEventListener('change', handler)
-      input.removeEventListener('input', handler)
-    }
-  }, [showForm])
 
   const load = async () => {
     setLoading(true)
@@ -109,7 +97,7 @@ function TasksPageInner() {
     if (!form.title.trim() || !form.clientId) return
     const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
     const method = editing ? 'PATCH' : 'POST'
-    const finalDueDate = dateRef.current?.value || dueDate || null
+    const finalDueDate = dateRef.current?.value || null
     const payload = { ...form, dueDate: finalDueDate, estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null }
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     cancel(); load()
@@ -241,8 +229,14 @@ function TasksPageInner() {
                     <option value="RECURRING">Pravidelný</option>
                   </select></div>
                 <div><label className="label">Termín</label>
-                  <input ref={dateRef} className="input" type="date" />
-                  <div style={{ fontSize: 11, color: 'red', marginTop: 4 }}>state: "{dueDate}" | ref: "{dateRef.current?.value}"</div>
+                  <input
+                    ref={dateRef}
+                    className="input"
+                    type="date"
+                    value={dueDate}
+                    onChange={e => setDueDate(e.target.value)}
+                    onBlur={e => setDueDate(e.target.value)}
+                  />
                 </div>
               </div>
               <div><label className="label">Odhadovaný čas (hod)</label><input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={e => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" /></div>
