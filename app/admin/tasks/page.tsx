@@ -11,6 +11,7 @@ type Task = {
   client: { id: string; name: string; color: string | null }
   employee: { id: string; name: string } | null
   estimatedHours: number | null; dueDate: string | null; completedAt: string | null
+  position: number
   timeEntries: { hours: number }[]
 }
 
