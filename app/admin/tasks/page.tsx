@@ -141,7 +141,10 @@ function TasksPageInner() {
       .filter(t => t.status === targetColId &&
         (!filterClient || t.client.id === filterClient) &&
         (!filterEmployee || t.employee?.id === filterEmployee))
-      .sort((a, b) => (a.position || 0) - (b.position || 0))
+      .sort((a, b) => {
+        const pd = (a.position || 0) - (b.position || 0)
+        return pd !== 0 ? pd : a.id.localeCompare(b.id)
+      })
 
     const draggedTask = allTasks.find(t => t.id === dragId)
     if (!draggedTask) return
@@ -217,7 +220,7 @@ function TasksPageInner() {
           {/* Desktop kanban */}
           <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14, alignItems: 'start' }}>
             {COLS.map(col => {
-              const colTasks = filtered.filter(t => t.status === col.id)
+              const colTasks = filtered.filter(t => t.status === col.id).sort((a, b) => (a.position || 0) - (b.position || 0))
               const isOver = dragOver === col.id
               return (
                 <div key={col.id} className={`kcol ${col.colClass} ${isOver ? 'is-dragover' : ''}`}
@@ -267,7 +270,7 @@ function TasksPageInner() {
           {/* Mobile grouped list */}
           <div className="md:hidden" style={{ flexDirection: 'column', gap: 20 }}>
             {COLS.map(col => {
-              const colTasks = filtered.filter(t => t.status === col.id)
+              const colTasks = filtered.filter(t => t.status === col.id).sort((a, b) => (a.position || 0) - (b.position || 0))
               if (!colTasks.length) return null
               return (
                 <div key={col.id}>

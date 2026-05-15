@@ -28,6 +28,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json()
+  const maxPos = await prisma.task.aggregate({ _max: { position: true } })
+  const position = (maxPos._max.position ?? 0) + 1000
   const task = await prisma.task.create({
     data: {
       title: body.title,
@@ -38,6 +40,7 @@ export async function POST(req: Request) {
       employeeId: body.employeeId || null,
       estimatedHours: body.estimatedHours !== '' && body.estimatedHours != null ? parseFloat(body.estimatedHours) : null,
       dueDate: body.dueDate ? new Date(body.dueDate + 'T12:00:00') : null,
+      position,
     },
     include: {
       client: { select: { id: true, name: true, color: true } },
