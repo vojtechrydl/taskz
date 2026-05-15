@@ -241,7 +241,7 @@ function TasksPageInner() {
                         onDragOver={e => {
                           e.preventDefault()
                           const rect = e.currentTarget.getBoundingClientRect()
-                          const pos = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+                          const pos: 'before' | 'after' = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
                           const next = { taskId: t.id, pos }
                           dropTargetRef.current = next
                           setDropTarget(next)
