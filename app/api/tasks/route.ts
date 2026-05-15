@@ -21,7 +21,7 @@ export async function GET(req: Request) {
       employee: { select: { id: true, name: true } },
       timeEntries: { select: { hours: true } },
     },
-    orderBy: [{ status: 'asc' }, { dueDate: 'asc' }, { createdAt: 'desc' }],
+    orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
   })
   return NextResponse.json(tasks)
 }

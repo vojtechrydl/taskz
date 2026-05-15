@@ -53,6 +53,8 @@ function TasksPageInner() {
   const [filterClient, setFilterClient] = useState('')
   const [filterEmployee, setFilterEmployee] = useState('')
   const [dragOver, setDragOver] = useState<string | null>(null)
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dropTarget, setDropTarget] = useState<{ taskId: string; pos: 'before' | 'after' } | null>(null)
   const [dueDate, setDueDate] = useState('')
   const [saving, setSaving] = useState(false)
   const dateRef = useRef<HTMLInputElement>(null)
@@ -127,6 +129,45 @@ function TasksPageInner() {
 
   const resetTask = async (id: string) => { await fetch(`/api/tasks/${id}/reset`, { method: 'POST' }); load() }
 
+  const reorderDrop = async (dragId: string, targetColId: string) => {
+    const colTasks = filtered.filter(t => t.status === targetColId)
+    let insertIdx: number
+
+    if (!dropTarget) {
+      insertIdx = colTasks.length
+    } else {
+      const targetIdx = colTasks.findIndex(t => t.id === dropTarget.taskId)
+      insertIdx = dropTarget.pos === 'before' ? targetIdx : targetIdx + 1
+    }
+
+    // Remove dragged from its current col, insert at insertIdx in target col
+    const draggedTask = tasks.find(t => t.id === dragId)!
+    const oldColTasks = tasks.filter(t => t.status === draggedTask.status && t.id !== dragId)
+    const newColTasks = colTasks.filter(t => t.id !== dragId)
+    newColTasks.splice(Math.max(0, insertIdx), 0, draggedTask)
+
+    // Build position updates
+    const updates: { id: string; status: string; position: number }[] = []
+    newColTasks.forEach((t, i) => updates.push({ id: t.id, status: targetColId, position: (i + 1) * 1000 }))
+    if (draggedTask.status !== targetColId) {
+      oldColTasks.forEach((t, i) => updates.push({ id: t.id, status: t.status, position: (i + 1) * 1000 }))
+    }
+
+    // Optimistic update
+    setTasks(prev => prev.map(t => {
+      const u = updates.find(u => u.id === t.id)
+      return u ? { ...t, status: u.status as Task['status'], position: u.position } : t
+    }))
+
+    await fetch('/api/tasks/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    })
+
+    setDraggedId(null); setDropTarget(null); setDragOver(null)
+  }
+
   const filtered = tasks.filter(t =>
     (!filterClient || t.client.id === filterClient) &&
     (!filterEmployee || t.employee?.id === filterEmployee)
@@ -168,8 +209,8 @@ function TasksPageInner() {
               return (
                 <div key={col.id} className={`kcol ${col.colClass} ${isOver ? 'is-dragover' : ''}`}
                   onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(col.id) }}
-                  onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null) }}
-                  onDrop={e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) setStatus(id, col.id); setDragOver(null) }}>
+                  onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setDragOver(null) } }}
+                  onDrop={e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) reorderDrop(id, col.id) }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px 12px' }}>
                     <span className={`status-dot ${col.dotClass}`} />
                     <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink-1)' }}>{col.label}</span>
@@ -178,7 +219,26 @@ function TasksPageInner() {
                   </div>
                   {colTasks.length === 0 ? (
                     <div className="empty-col">Přetáhni sem</div>
-                  ) : colTasks.map(t => <TaskCard key={t.id} t={t} colIdx={COLS.findIndex(c => c.id === t.status)} onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} />)}
+                  ) : colTasks.map(t => (
+                    <div key={t.id}>
+                      {dropTarget?.taskId === t.id && dropTarget.pos === 'before' && (
+                        <div style={{ height: 3, background: 'var(--accent)', borderRadius: 2, margin: '0 4px 6px' }} />
+                      )}
+                      <div
+                        onDragOver={e => {
+                          e.preventDefault(); e.stopPropagation()
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          const pos = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+                          setDropTarget({ taskId: t.id, pos })
+                        }}
+                      >
+                        <TaskCard t={t} colIdx={COLS.findIndex(c => c.id === t.status)} onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} draggedId={draggedId} onDragStart={setDraggedId} onDragEnd={() => { setDraggedId(null); setDropTarget(null) }} />
+                      </div>
+                      {dropTarget?.taskId === t.id && dropTarget.pos === 'after' && (
+                        <div style={{ height: 3, background: 'var(--accent)', borderRadius: 2, margin: '6px 4px 0' }} />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )
             })}
@@ -256,10 +316,11 @@ function TasksPageInner() {
   )
 }
 
-function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset }: {
+function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset, draggedId, onDragStart, onDragEnd }: {
   t: Task; colIdx: number; mobile?: boolean
   onEdit: (t: Task) => void; onDel: (id: string, title: string) => void
   onMove: (id: string, dir: 'left' | 'right') => void; onReset: (id: string) => void
+  draggedId?: string | null; onDragStart?: (id: string) => void; onDragEnd?: () => void
 }) {
   const logged = t.timeEntries.reduce((s, e) => s + e.hours, 0)
   const pct = t.estimatedHours ? Math.min(logged / t.estimatedHours, 1) : 0
@@ -267,10 +328,10 @@ function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset }:
   const overdue = t.dueDate && t.status !== 'DONE' && new Date(t.dueDate) < new Date()
 
   return (
-    <div className="glass-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, opacity: t.status === 'DONE' ? 0.6 : 1 }}
+    <div className="glass-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, opacity: draggedId === t.id ? 0.35 : t.status === 'DONE' ? 0.6 : 1 }}
       draggable={!mobile}
-      onDragStart={e => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' }}
-      onDragEnd={() => {}}>
+      onDragStart={e => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move'; onDragStart?.(t.id) }}
+      onDragEnd={() => onDragEnd?.()}>
       <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.3, color: 'var(--ink-1)', textDecoration: t.status === 'DONE' ? 'line-through' : 'none' }}>
         {t.type === 'RECURRING' && <span style={{ color: 'var(--accent)', marginRight: 4 }}>↺</span>}
         {t.title}

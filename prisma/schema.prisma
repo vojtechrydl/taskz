@@ -55,6 +55,7 @@ model Task {
   estimatedHours Float?
   dueDate        DateTime?
   completedAt    DateTime?
+  position       Float       @default(0)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   timeEntries    TimeEntry[]
