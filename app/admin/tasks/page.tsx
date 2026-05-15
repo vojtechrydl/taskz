@@ -55,6 +55,9 @@ function TasksPageInner() {
   const [dragOver, setDragOver] = useState<string | null>(null)
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<{ taskId: string; pos: 'before' | 'after' } | null>(null)
+  const dropTargetRef = useRef<{ taskId: string; pos: 'before' | 'after' } | null>(null)
+  const tasksRef = useRef(tasks)
+  tasksRef.current = tasks
   const [dueDate, setDueDate] = useState('')
   const [saving, setSaving] = useState(false)
   const dateRef = useRef<HTMLInputElement>(null)
@@ -130,30 +133,41 @@ function TasksPageInner() {
   const resetTask = async (id: string) => { await fetch(`/api/tasks/${id}/reset`, { method: 'POST' }); load() }
 
   const reorderDrop = async (dragId: string, targetColId: string) => {
-    const colTasks = filtered.filter(t => t.status === targetColId)
-    let insertIdx: number
+    const allTasks = tasksRef.current
+    const dt = dropTargetRef.current
 
-    if (!dropTarget) {
-      insertIdx = colTasks.length
-    } else {
-      const targetIdx = colTasks.findIndex(t => t.id === dropTarget.taskId)
-      insertIdx = dropTarget.pos === 'before' ? targetIdx : targetIdx + 1
+    const colTasks = allTasks
+      .filter(t => t.status === targetColId &&
+        (!filterClient || t.client.id === filterClient) &&
+        (!filterEmployee || t.employee?.id === filterEmployee))
+      .sort((a, b) => (a.position || 0) - (b.position || 0))
+
+    const draggedTask = allTasks.find(t => t.id === dragId)
+    if (!draggedTask) return
+
+    const withoutDragged = colTasks.filter(t => t.id !== dragId)
+    let insertIdx = withoutDragged.length
+    if (dt) {
+      const targetIdx = withoutDragged.findIndex(t => t.id === dt.taskId)
+      if (targetIdx >= 0) insertIdx = dt.pos === 'before' ? targetIdx : targetIdx + 1
     }
 
-    // Remove dragged from its current col, insert at insertIdx in target col
-    const draggedTask = tasks.find(t => t.id === dragId)!
-    const oldColTasks = tasks.filter(t => t.status === draggedTask.status && t.id !== dragId)
-    const newColTasks = colTasks.filter(t => t.id !== dragId)
-    newColTasks.splice(Math.max(0, insertIdx), 0, draggedTask)
+    const newColTasks = [...withoutDragged]
+    newColTasks.splice(insertIdx, 0, draggedTask)
 
-    // Build position updates
     const updates: { id: string; status: string; position: number }[] = []
     newColTasks.forEach((t, i) => updates.push({ id: t.id, status: targetColId, position: (i + 1) * 1000 }))
+
     if (draggedTask.status !== targetColId) {
-      oldColTasks.forEach((t, i) => updates.push({ id: t.id, status: t.status, position: (i + 1) * 1000 }))
+      allTasks
+        .filter(t => t.status === draggedTask.status && t.id !== dragId)
+        .sort((a, b) => (a.position || 0) - (b.position || 0))
+        .forEach((t, i) => updates.push({ id: t.id, status: t.status, position: (i + 1) * 1000 }))
     }
 
-    // Optimistic update
+    dropTargetRef.current = null
+    setDropTarget(null); setDraggedId(null); setDragOver(null)
+
     setTasks(prev => prev.map(t => {
       const u = updates.find(u => u.id === t.id)
       return u ? { ...t, status: u.status as Task['status'], position: u.position } : t
@@ -164,8 +178,6 @@ function TasksPageInner() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     })
-
-    setDraggedId(null); setDropTarget(null); setDragOver(null)
   }
 
   const filtered = tasks.filter(t =>
@@ -210,7 +222,7 @@ function TasksPageInner() {
                 <div key={col.id} className={`kcol ${col.colClass} ${isOver ? 'is-dragover' : ''}`}
                   onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(col.id) }}
                   onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) { setDragOver(null) } }}
-                  onDrop={e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) reorderDrop(id, col.id) }}>
+                  onDrop={e => { e.preventDefault(); dropTargetRef.current = null; const id = e.dataTransfer.getData('text/plain'); if (id) reorderDrop(id, col.id) }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px 12px' }}>
                     <span className={`status-dot ${col.dotClass}`} />
                     <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink-1)' }}>{col.label}</span>
@@ -226,10 +238,17 @@ function TasksPageInner() {
                       )}
                       <div
                         onDragOver={e => {
-                          e.preventDefault(); e.stopPropagation()
+                          e.preventDefault()
                           const rect = e.currentTarget.getBoundingClientRect()
                           const pos = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
-                          setDropTarget({ taskId: t.id, pos })
+                          const next = { taskId: t.id, pos }
+                          dropTargetRef.current = next
+                          setDropTarget(next)
+                        }}
+                        onDrop={e => {
+                          e.preventDefault(); e.stopPropagation()
+                          const id = e.dataTransfer.getData('text/plain')
+                          if (id) reorderDrop(id, col.id)
                         }}
                       >
                         <TaskCard t={t} colIdx={COLS.findIndex(c => c.id === t.status)} onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} draggedId={draggedId} onDragStart={setDraggedId} onDragEnd={() => { setDraggedId(null); setDropTarget(null) }} />
