@@ -54,6 +54,7 @@ function TasksPageInner() {
   const [filterEmployee, setFilterEmployee] = useState('')
   const [dragOver, setDragOver] = useState<string | null>(null)
   const [dueDate, setDueDate] = useState('')
+  const [saving, setSaving] = useState(false)
   const dateRef = useRef<HTMLInputElement>(null)
   const handledNewFor = useRef(false)
 
@@ -92,13 +93,18 @@ function TasksPageInner() {
   const cancel = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setDueDate('') }
 
   const save = async () => {
-    if (!form.title.trim() || !form.clientId) return
-    const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
-    const method = editing ? 'PATCH' : 'POST'
-    const finalDueDate = dateRef.current?.value || null
-    const payload = { ...form, dueDate: finalDueDate, estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null }
-    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    cancel(); load()
+    if (!form.title.trim() || !form.clientId || saving) return
+    setSaving(true)
+    try {
+      const url = editing ? `/api/tasks/${editing}` : '/api/tasks'
+      const method = editing ? 'PATCH' : 'POST'
+      const finalDueDate = dateRef.current?.value || null
+      const payload = { ...form, dueDate: finalDueDate, estimatedHours: form.estimatedHours !== '' ? form.estimatedHours : null }
+      await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      cancel(); load()
+    } finally {
+      setSaving(false)
+    }
   }
 
   const del = async (id: string, title: string) => {
@@ -241,7 +247,7 @@ function TasksPageInner() {
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={cancel}>Zrušit</button>
-              <button className="btn btn-accent" onClick={save}>Uložit</button>
+              <button className="btn btn-accent" onClick={save} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>{saving ? 'Ukládám…' : 'Uložit'}</button>
             </div>
           </div>
         </div>
