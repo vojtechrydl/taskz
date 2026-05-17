@@ -177,8 +177,8 @@ export default function AppPage() {
             </div>
             <span style={{ fontWeight: 600, letterSpacing: '0.04em', fontSize: 13, color: 'var(--ink-1)' }}>TASKZ</span>
           </div>
-          <div className="nav-divider hidden md:block" />
-          <Link href="/admin" className="nav-pill hidden md:block" style={{ color: 'var(--ink-3)' }}>Admin</Link>
+          <div className="nav-divider" />
+          <Link href="/admin" className="nav-pill" style={{ color: 'var(--ink-3)' }}>Admin</Link>
           <div className="nav-divider" />
           {/* Employee switcher */}
           <div style={{ position: 'relative' }}>
