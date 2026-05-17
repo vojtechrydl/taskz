@@ -195,9 +195,9 @@ function TasksPageInner() {
   return (
     <div className="fade-up">
       {/* Head */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 28 }}>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Úkoly</h1>
+          <h1 className="page-h1" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Úkoly</h1>
           <div style={{ fontSize: 15, color: 'var(--ink-3)' }}>Správa a sledování úkolů · {filtered.length} celkem · {fmtHours(totalLogged)}/{fmtHours(totalEst)}h</div>
         </div>
         <button className="btn btn-accent" onClick={openNew}>+ Nový úkol</button>
@@ -268,7 +268,7 @@ function TasksPageInner() {
           </div>
 
           {/* Mobile grouped list */}
-          <div className="md:hidden" style={{ flexDirection: 'column', gap: 20 }}>
+          <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {COLS.map(col => {
               const colTasks = filtered.filter(t => t.status === col.id).sort((a, b) => (a.position || 0) - (b.position || 0))
               if (!colTasks.length) return null
@@ -297,7 +297,7 @@ function TasksPageInner() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div><label className="label">Název *</label><input className="input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Název úkolu" /></div>
               <div><label className="label">Popis</label><textarea className="input" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label className="label">Klient *</label>
                   <select className="input" value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}>
                     <option value="">Vyberte klienta</option>
@@ -309,7 +309,7 @@ function TasksPageInner() {
                     {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                   </select></div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label className="label">Typ</label>
                   <select className="input" value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value as 'ONE_TIME' | 'RECURRING' }))}>
                     <option value="ONE_TIME">Jednorázový</option>

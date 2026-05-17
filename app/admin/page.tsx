@@ -89,9 +89,9 @@ export default function AdminDashboard() {
   return (
     <div className="fade-up">
       {/* Page head */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
         <div>
-          <h1 style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Přehled</h1>
+          <h1 className="page-h1" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Přehled</h1>
           <div style={{ fontSize: 15, color: 'var(--ink-3)' }}>Aktuální stav studia · {MONTHS[thisMonth]} {thisYear}</div>
         </div>
       </div>

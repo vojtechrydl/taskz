@@ -177,8 +177,8 @@ export default function AppPage() {
             </div>
             <span style={{ fontWeight: 600, letterSpacing: '0.04em', fontSize: 13, color: 'var(--ink-1)' }}>TASKZ</span>
           </div>
-          <div className="nav-divider" />
-          <Link href="/admin" className="nav-pill" style={{ color: 'var(--ink-3)' }}>Admin</Link>
+          <div className="nav-divider hidden md:block" />
+          <Link href="/admin" className="nav-pill hidden md:block" style={{ color: 'var(--ink-3)' }}>Admin</Link>
           <div className="nav-divider" />
           {/* Employee switcher */}
           <div style={{ position: 'relative' }}>
@@ -188,9 +188,9 @@ export default function AppPage() {
                   <span style={{ width: 22, height: 22, borderRadius: '50%', background: `oklch(70% 0.16 ${hueForId(selectedEmp.id)})`, display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
                     {initials(selectedEmp.name)}
                   </span>
-                  Pohled zaměstnance
+                  <span className="hidden md:inline">Pohled zaměstnance</span>
                 </>
-              ) : 'Vyberte sebe ▾'}
+              ) : <><span className="hidden md:inline">Vyberte sebe </span>▾</>}
             </button>
             {showSwitcher && (
               <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, minWidth: 220, zIndex: 20, padding: 6, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', border: '1px solid var(--glass-border-2)', borderRadius: 16, boxShadow: '0 20px 40px -10px rgba(20,18,30,0.22)' }}>
@@ -217,20 +217,18 @@ export default function AppPage() {
         ) : (
           <>
             {/* Hero */}
-            <div className="glass-strong" style={{ padding: '36px 40px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 32, marginBottom: 28, background: 'linear-gradient(135deg, oklch(96% 0.04 220 / 0.7), oklch(97% 0.03 290 / 0.6))' }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>Dobré ráno · {dateStr}</div>
-                <h2 style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px', color: 'var(--ink-1)' }}>
-                  {selectedEmp?.name.split(' ')[0]}, máš dnes <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>{activeTasks} aktivních</em> úkolů.
-                </h2>
-                <div style={{ display: 'flex', gap: 24 }}>
-                  {[{ v: activeTasks, l: 'aktivních' }, { v: doneTasks, l: 'splněných' }, { v: `${fmtHours(totalHours)}h`, l: 'odpracováno' }].map(s => (
-                    <div key={s.l}>
-                      <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
-                      <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 4 }}>{s.l}</div>
-                    </div>
-                  ))}
-                </div>
+            <div className="glass-strong app-hero" style={{ marginBottom: 28, background: 'linear-gradient(135deg, oklch(96% 0.04 220 / 0.7), oklch(97% 0.03 290 / 0.6))' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}>Dobré ráno · {dateStr}</div>
+              <h2 className="app-hero-h2" style={{ fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px', color: 'var(--ink-1)' }}>
+                {selectedEmp?.name.split(' ')[0]}, máš dnes <em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>{activeTasks} aktivních</em> úkolů.
+              </h2>
+              <div style={{ display: 'flex', gap: 24 }}>
+                {[{ v: activeTasks, l: 'aktivních' }, { v: doneTasks, l: 'splněných' }, { v: `${fmtHours(totalHours)}h`, l: 'odpracováno' }].map(s => (
+                  <div key={s.l}>
+                    <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
+                    <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 4 }}>{s.l}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -310,7 +308,7 @@ export default function AppPage() {
                 </div>
 
                 {/* Mobile grouped */}
-                <div className="md:hidden" style={{ flexDirection: 'column', gap: 20 }}>
+                <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   {COLS.map(col => {
                     const colTasks = filteredTasks.filter(t => t.status === col.id)
                     if (!colTasks.length) return null

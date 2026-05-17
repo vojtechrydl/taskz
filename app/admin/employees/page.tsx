@@ -37,9 +37,9 @@ export default function EmployeesPage() {
 
   return (
     <div className="fade-up">
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
         <div>
-          <h1 style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Zaměstnanci</h1>
+          <h1 className="page-h1" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 6px', color: 'var(--ink-1)' }}>Zaměstnanci</h1>
           <div style={{ fontSize: 15, color: 'var(--ink-3)' }}>Správa členů týmu · {employees.length} aktivních</div>
         </div>
         <button className="btn btn-accent" onClick={openNew}>+ Nový zaměstnanec</button>

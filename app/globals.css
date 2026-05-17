@@ -226,11 +226,20 @@ select.input { cursor: pointer; }
 .dash-team { grid-column: span 5; }
 .dash-clients { grid-column: span 7; }
 
+/* App hero */
+.app-hero { padding: 36px 40px; }
+.app-hero-h2 { font-size: 32px; }
+
 @media (max-width: 767px) {
   .dash-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .dash-hero, .dash-c3, .dash-team, .dash-clients { grid-column: span 2; }
   .dash-c1, .dash-c2 { grid-column: span 1; }
   .dash-hero-h2 { font-size: 20px !important; }
-  .page-h1 { font-size: 28px !important; }
+  .page-h1 { font-size: 26px !important; }
   .kanban { grid-template-columns: 1fr !important; }
+  .page-header { flex-wrap: wrap !important; gap: 12px !important; align-items: flex-start !important; }
+  .modal-box { padding: 20px !important; }
+  .modal-form-grid { grid-template-columns: 1fr !important; }
+  .app-hero { padding: 22px 20px !important; }
+  .app-hero-h2 { font-size: 22px !important; }
 }
