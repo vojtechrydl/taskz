@@ -188,9 +188,9 @@ export default function AppPage() {
                   <span style={{ width: 22, height: 22, borderRadius: '50%', background: `oklch(70% 0.16 ${hueForId(selectedEmp.id)})`, display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 600, color: '#fff', flexShrink: 0 }}>
                     {initials(selectedEmp.name)}
                   </span>
-                  <span className="hidden md:inline">Pohled zaměstnance</span>
+                  <span className="nav-text">Pohled zaměstnance</span>
                 </>
-              ) : <><span className="hidden md:inline">Vyberte sebe </span>▾</>}
+              ) : <><span className="nav-text">Vyberte sebe </span>▾</>}
             </button>
             {showSwitcher && (
               <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, minWidth: 220, zIndex: 20, padding: 6, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)', border: '1px solid var(--glass-border-2)', borderRadius: 16, boxShadow: '0 20px 40px -10px rgba(20,18,30,0.22)' }}>
@@ -249,7 +249,7 @@ export default function AppPage() {
             {tab === 'tasks' && (
               <>
                 {/* Desktop kanban */}
-                <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14, alignItems: 'start' }}>
+                <div className="kanban-view">
                   {COLS.map(col => {
                     const colTasks = filteredTasks.filter(t => t.status === col.id)
                     const isOver = dragOver === col.id
@@ -311,7 +311,7 @@ export default function AppPage() {
                 </div>
 
                 {/* Mobile grouped */}
-                <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="list-view">
                   {COLS.map(col => {
                     const colTasks = filteredTasks.filter(t => t.status === col.id)
                     if (!colTasks.length) return null

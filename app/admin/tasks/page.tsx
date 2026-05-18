@@ -227,7 +227,7 @@ function TasksPageInner() {
       {loading ? <p style={{ color: 'var(--ink-3)' }}>Načítám...</p> : (
         <>
           {/* Desktop kanban */}
-          <div className="hidden md:grid" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 14, alignItems: 'start' }}>
+          <div className="kanban-view">
             {COLS.map(col => {
               const colTasks = filtered.filter(t => t.status === col.id).sort((a, b) => (a.position || 0) - (b.position || 0))
               const isOver = dragOver === col.id
@@ -277,7 +277,7 @@ function TasksPageInner() {
           </div>
 
           {/* Mobile grouped list */}
-          <div className="md:hidden" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="list-view">
             {COLS.map(col => {
               const colTasks = filtered.filter(t => t.status === col.id).sort((a, b) => (a.position || 0) - (b.position || 0))
               if (!colTasks.length) return null
@@ -472,7 +472,7 @@ function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset, o
           {t.status === 'DONE' && t.type === 'RECURRING' && <button className="icon-btn" onClick={() => onReset(t.id)} title="Reset" style={{ color: 'var(--accent)' }}>↺</button>}
           {onDetail && <button className="btn btn-ghost btn-sm" onClick={() => onDetail(t)}>Zobrazit</button>}
           <button className="btn btn-ghost btn-sm" onClick={() => onEdit(t)}>Upravit</button>
-          <button className="btn btn-danger btn-sm" onClick={() => onDel(t.id, t.title)}>Smazat</button>
+          <button className="icon-btn" style={{ color: 'oklch(60% 0.18 25)' }} onClick={() => onDel(t.id, t.title)} title="Smazat">✕</button>
         </div>
       </div>
     </div>

@@ -216,6 +216,16 @@ select.input { cursor: pointer; }
 /* Nav divider */
 .nav-divider { width: 1px; height: 22px; background: var(--glass-border); margin: 0 4px; }
 
+/* Responsive kanban / list toggle */
+.kanban-view { display: none; }
+.list-view { display: flex; flex-direction: column; gap: 20px; }
+.nav-text { display: none; }
+@media (min-width: 768px) {
+  .kanban-view { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .list-view { display: none; }
+  .nav-text { display: inline; }
+}
+
 /* Dashboard responsive grid */
 .dash-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
 .dash-hero { grid-column: span 7; }
