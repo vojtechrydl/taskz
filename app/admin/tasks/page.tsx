@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 
 type Client = { id: string; name: string }
 type Employee = { id: string; name: string }
+type Comment = { id: string; text: string; createdAt: string; employee: { id: string; name: string } }
 type Task = {
   id: string; title: string; description: string | null
   type: 'ONE_TIME' | 'RECURRING'
@@ -61,6 +62,8 @@ function TasksPageInner() {
   tasksRef.current = tasks
   const [dueDate, setDueDate] = useState('')
   const [saving, setSaving] = useState(false)
+  const [detailTask, setDetailTask] = useState<Task | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
   const dateRef = useRef<HTMLInputElement>(null)
   const handledNewFor = useRef(false)
 
@@ -132,6 +135,12 @@ function TasksPageInner() {
   }
 
   const resetTask = async (id: string) => { await fetch(`/api/tasks/${id}/reset`, { method: 'POST' }); load() }
+
+  const openDetail = async (t: Task) => {
+    setDetailTask(t)
+    const data = await fetch(`/api/tasks/${t.id}/comments`).then(r => r.json())
+    setComments(data)
+  }
 
   const reorderDrop = async (dragId: string, targetColId: string) => {
     const allTasks = tasksRef.current
@@ -255,7 +264,7 @@ function TasksPageInner() {
                           if (id) reorderDrop(id, col.id)
                         }}
                       >
-                        <TaskCard t={t} colIdx={COLS.findIndex(c => c.id === t.status)} onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} draggedId={draggedId} onDragStart={setDraggedId} onDragEnd={() => { setDraggedId(null); setDropTarget(null) }} />
+                        <TaskCard t={t} colIdx={COLS.findIndex(c => c.id === t.status)} onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} onDetail={openDetail} draggedId={draggedId} onDragStart={setDraggedId} onDragEnd={() => { setDraggedId(null); setDropTarget(null) }} />
                       </div>
                       {dropTarget?.taskId === t.id && dropTarget.pos === 'after' && (
                         <div style={{ height: 3, background: 'var(--accent)', borderRadius: 2, margin: '6px 4px 0' }} />
@@ -280,13 +289,64 @@ function TasksPageInner() {
                     <span style={{ fontSize: 12, color: 'var(--ink-4)' }}>{colTasks.length}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {colTasks.map(t => <TaskCard key={t.id} t={t} colIdx={COLS.findIndex(c => c.id === t.status)} mobile onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} />)}
+                    {colTasks.map(t => <TaskCard key={t.id} t={t} colIdx={COLS.findIndex(c => c.id === t.status)} mobile onEdit={openEdit} onDel={del} onMove={moveCard} onReset={resetTask} onDetail={openDetail} />)}
                   </div>
                 </div>
               )
             })}
           </div>
         </>
+      )}
+
+      {/* Detail modal */}
+      {detailTask && (
+        <div className="modal-overlay" onClick={() => setDetailTask(null)}>
+          <div className="glass-strong" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, borderRadius: 24, display: 'flex', flexDirection: 'column', maxHeight: '85vh', animation: 'modalIn 0.22s ease' }}>
+            <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: 17, fontWeight: 600, margin: '0 0 6px', color: 'var(--ink-1)', letterSpacing: '-0.01em' }}>{detailTask.title}</h2>
+                  <div style={{ fontSize: 12, color: 'var(--ink-3)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: detailTask.client.color || 'var(--ink-4)', display: 'inline-block' }} />
+                      {detailTask.client.name}
+                    </span>
+                    {detailTask.employee && <span>· {detailTask.employee.name}</span>}
+                    {detailTask.dueDate && <span>· {new Date(detailTask.dueDate).toLocaleDateString('cs')}</span>}
+                  </div>
+                </div>
+                <button className="icon-btn" onClick={() => setDetailTask(null)}>✕</button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {detailTask.description ? (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)', marginBottom: 8 }}>Popis</div>
+                  <div style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{detailTask.description}</div>
+                </div>
+              ) : <p style={{ color: 'var(--ink-4)', fontStyle: 'italic', fontSize: 14 }}>Bez popisu.</p>}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-3)', marginBottom: 12 }}>Komentáře {comments.length > 0 && `(${comments.length})`}</div>
+                {comments.length === 0 ? <p style={{ color: 'var(--ink-4)', fontStyle: 'italic', fontSize: 14 }}>Zatím žádné komentáře.</p> : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {comments.map(c => (
+                      <div key={c.id} style={{ display: 'flex', gap: 10 }}>
+                        <div className="avatar" style={{ background: `oklch(70% 0.16 ${hueForId(c.employee.id)})`, flexShrink: 0 }}>{initials(c.employee.name)}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', gap: 8, marginBottom: 4, alignItems: 'baseline' }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-1)' }}>{c.employee.name}</span>
+                            <span style={{ fontSize: 11, color: 'var(--ink-4)' }}>{new Date(c.createdAt).toLocaleString('cs', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap' }}>{c.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal */}
@@ -339,10 +399,11 @@ function TasksPageInner() {
   )
 }
 
-function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset, draggedId, onDragStart, onDragEnd }: {
+function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset, onDetail, draggedId, onDragStart, onDragEnd }: {
   t: Task; colIdx: number; mobile?: boolean
   onEdit: (t: Task) => void; onDel: (id: string, title: string) => void
   onMove: (id: string, dir: 'left' | 'right') => void; onReset: (id: string) => void
+  onDetail?: (t: Task) => void
   draggedId?: string | null; onDragStart?: (id: string) => void; onDragEnd?: () => void
 }) {
   const logged = t.timeEntries.reduce((s, e) => s + e.hours, 0)
@@ -409,6 +470,7 @@ function TaskCard({ t, colIdx, mobile = false, onEdit, onDel, onMove, onReset, d
           {colIdx > 0 && <button className="icon-btn" onClick={() => onMove(t.id, 'left')} title="←">{mobile ? '↑' : '←'}</button>}
           {colIdx < 3 && <button className="icon-btn" onClick={() => onMove(t.id, 'right')} title="→">{mobile ? '↓' : '→'}</button>}
           {t.status === 'DONE' && t.type === 'RECURRING' && <button className="icon-btn" onClick={() => onReset(t.id)} title="Reset" style={{ color: 'var(--accent)' }}>↺</button>}
+          {onDetail && <button className="btn btn-ghost btn-sm" onClick={() => onDetail(t)}>Zobrazit</button>}
           <button className="btn btn-ghost btn-sm" onClick={() => onEdit(t)}>Upravit</button>
           <button className="btn btn-danger btn-sm" onClick={() => onDel(t.id, t.title)}>Smazat</button>
         </div>

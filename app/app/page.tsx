@@ -297,7 +297,10 @@ export default function AppPage() {
                               <div style={{ display: 'flex', gap: 4, paddingTop: 8, borderTop: '1px solid var(--glass-border)' }}>
                                 {colIdx > 0 && <button className="icon-btn" onClick={() => setStatus(t.id, COLS[colIdx - 1].id)}>←</button>}
                                 {colIdx < 3 && <button className="icon-btn" onClick={() => setStatus(t.id, COLS[colIdx + 1].id)}>→</button>}
-                                <button className="btn btn-accent btn-sm" style={{ marginLeft: 'auto' }} onClick={() => openLog(t)}>+ Hodiny</button>
+                                <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                                  <button className="btn btn-ghost btn-sm" onClick={() => openDetail(t)}>Zobrazit</button>
+                                  <button className="btn btn-accent btn-sm" onClick={() => openLog(t)}>+ Hodiny</button>
+                                </div>
                               </div>
                             </div>
                           )
@@ -327,7 +330,10 @@ export default function AppPage() {
                             <div key={t.id} className="glass-card" style={{ padding: 14, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                                 <button style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink-1)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }} onClick={() => openDetail(t)}>{t.title}</button>
-                                <button className="btn btn-accent btn-sm" style={{ flexShrink: 0 }} onClick={() => openLog(t)}>+ Hodiny</button>
+                                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                  <button className="btn btn-ghost btn-sm" onClick={() => openDetail(t)}>Zobrazit</button>
+                                  <button className="btn btn-accent btn-sm" onClick={() => openLog(t)}>+ Hodiny</button>
+                                </div>
                               </div>
                               <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
