@@ -98,18 +98,21 @@ export default function ClientsPage() {
 
       {showForm && (
         <div className="modal-overlay" onClick={cancel}>
-          <div className="glass-strong modal-box" onClick={e => e.stopPropagation()} style={{ padding: 32 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 24px', color: 'var(--ink-1)' }}>
-              {editing ? 'Upravit klienta' : 'Nový klient'}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="glass-strong" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, borderRadius: 24, display: 'flex', flexDirection: 'column', maxHeight: '85vh', animation: 'modalIn 0.22s ease' }}>
+            <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink-1)' }}>
+                {editing ? 'Upravit klienta' : 'Nový klient'}
+              </h2>
+              <button className="icon-btn" onClick={cancel}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div><label className="label">Název *</label><input className="input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Název firmy" /></div>
               <div><label className="label">Barva</label><ColorPicker value={form.color} onChange={c => setForm(p => ({ ...p, color: c }))} /></div>
               <div><label className="label">E-mail</label><input className="input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="kontakt@firma.cz" /></div>
               <div><label className="label">Telefon</label><input className="input" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="+420 ..." /></div>
               <div><label className="label">Poznámky</label><textarea className="input" rows={3} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} /></div>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
+            <div style={{ padding: '16px 24px 20px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={cancel}>Zrušit</button>
               <button className="btn btn-accent" onClick={save}>Uložit</button>
             </div>

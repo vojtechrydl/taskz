@@ -352,9 +352,12 @@ function TasksPageInner() {
       {/* Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={cancel}>
-          <div className="glass-strong modal-box" onClick={e => e.stopPropagation()} style={{ padding: 32, maxWidth: 520 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 24px', color: 'var(--ink-1)' }}>{editing ? 'Upravit úkol' : 'Nový úkol'}</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="glass-strong" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, borderRadius: 24, display: 'flex', flexDirection: 'column', maxHeight: '85vh', animation: 'modalIn 0.22s ease' }}>
+            <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink-1)' }}>{editing ? 'Upravit úkol' : 'Nový úkol'}</h2>
+              <button className="icon-btn" onClick={cancel}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div><label className="label">Název *</label><input className="input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Název úkolu" /></div>
               <div><label className="label">Popis</label><textarea className="input" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
               <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -377,18 +380,12 @@ function TasksPageInner() {
                   </select></div>
                 <div>
                   <label className="label">Termín</label>
-                  <input
-                    ref={dateRef}
-                    className="input"
-                    type="date"
-                    key={editing ?? 'new'}
-                    defaultValue={dueDate || new Date().toISOString().slice(0, 10)}
-                  />
+                  <input ref={dateRef} className="input" type="date" key={editing ?? 'new'} defaultValue={dueDate || new Date().toISOString().slice(0, 10)} />
                 </div>
               </div>
               <div><label className="label">Odhadovaný čas (hod)</label><input className="input" type="number" min="0" step="0.5" value={form.estimatedHours} onChange={e => setForm(p => ({ ...p, estimatedHours: e.target.value }))} placeholder="0" /></div>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
+            <div style={{ padding: '16px 24px 20px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={cancel}>Zrušit</button>
               <button className="btn btn-accent" onClick={save} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>{saving ? 'Ukládám…' : 'Uložit'}</button>
             </div>

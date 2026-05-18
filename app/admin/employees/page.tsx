@@ -89,15 +89,18 @@ export default function EmployeesPage() {
 
       {showForm && (
         <div className="modal-overlay" onClick={cancel}>
-          <div className="glass-strong modal-box" onClick={e => e.stopPropagation()} style={{ padding: 32 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 24px', color: 'var(--ink-1)' }}>
-              {editing ? 'Upravit zaměstnance' : 'Nový zaměstnanec'}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="glass-strong" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, borderRadius: 24, display: 'flex', flexDirection: 'column', maxHeight: '85vh', animation: 'modalIn 0.22s ease' }}>
+            <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink-1)' }}>
+                {editing ? 'Upravit zaměstnance' : 'Nový zaměstnanec'}
+              </h2>
+              <button className="icon-btn" onClick={cancel}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div><label className="label">Jméno *</label><input className="input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Jan Novák" /></div>
               <div><label className="label">E-mail</label><input className="input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="jan@firma.cz" /></div>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 24, justifyContent: 'flex-end' }}>
+            <div style={{ padding: '16px 24px 20px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={cancel}>Zrušit</button>
               <button className="btn btn-accent" onClick={save}>Uložit</button>
             </div>
