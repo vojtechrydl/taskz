@@ -202,6 +202,7 @@ function TasksPageInner() {
   const totalEst = filtered.reduce((s, t) => s + (t.estimatedHours || 0), 0)
 
   return (
+    <>
     <div className="fade-up">
       {/* Head */}
       <div className="page-header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 28 }}>
@@ -298,6 +299,8 @@ function TasksPageInner() {
         </>
       )}
 
+    </div>
+
       {/* Detail modal */}
       {detailTask && (
         <div className="modal-overlay" onClick={() => setDetailTask(null)}>
@@ -392,7 +395,7 @@ function TasksPageInner() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 

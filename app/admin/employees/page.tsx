@@ -36,6 +36,7 @@ export default function EmployeesPage() {
   }
 
   return (
+    <>
     <div className="fade-up">
       <div className="page-header" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, marginBottom: 32 }}>
         <div>
@@ -87,6 +88,8 @@ export default function EmployeesPage() {
         </div>
       )}
 
+    </div>
+
       {showForm && (
         <div className="modal-overlay" onClick={cancel}>
           <div className="glass-strong" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, borderRadius: 24, display: 'flex', flexDirection: 'column', maxHeight: '85vh', animation: 'modalIn 0.22s ease' }}>
@@ -107,6 +110,6 @@ export default function EmployeesPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
